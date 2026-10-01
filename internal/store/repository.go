@@ -85,6 +85,61 @@ func (r *Repository) GetProject(ctx context.Context, name string) (*api.Project,
 	return scanProject(row)
 }
 
+func (r *Repository) UpdateProject(ctx context.Context, name string, project *api.Project) error {
+	if project == nil {
+		return errors.New("project is required")
+	}
+	project.Normalize()
+	project.Metadata.Name = name
+	if err := project.Validate(); err != nil {
+		return err
+	}
+	spec, err := json.Marshal(project.Spec)
+	if err != nil {
+		return fmt.Errorf("marshal project spec: %w", err)
+	}
+	labels, err := json.Marshal(project.Metadata.Labels)
+	if err != nil {
+		return fmt.Errorf("marshal project labels: %w", err)
+	}
+	annotations, err := json.Marshal(project.Metadata.Annotations)
+	if err != nil {
+		return fmt.Errorf("marshal project annotations: %w", err)
+	}
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin project update: %w", err)
+	}
+	defer tx.Rollback()
+	var id string
+	if err := tx.QueryRowContext(ctx, `SELECT id::text FROM projects WHERE organization_id = $1 AND name = $2 AND deleted_at IS NULL FOR UPDATE`, r.organizationID, name).Scan(&id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("find project: %w", err)
+	}
+	var generation int64
+	var updatedAt time.Time
+	if err := tx.QueryRowContext(ctx, `
+		UPDATE projects SET display_name = $1, description = $2, environment = $3, region = $4,
+			spec = $5::jsonb, labels = $6::jsonb, annotations = $7::jsonb, generation = generation + 1
+		WHERE id = $8
+		RETURNING generation, updated_at`, project.Spec.DisplayName, project.Spec.Description, project.Spec.Environment, project.Spec.Region, spec, labels, annotations, id).
+		Scan(&generation, &updatedAt); err != nil {
+		return fmt.Errorf("update project: %w", err)
+	}
+	project.Metadata.UID = id
+	project.Metadata.Generation = generation
+	project.Status.LastReconciledAt = &updatedAt
+	if err := insertOutbox(ctx, tx, "Project", id, "ProjectUpdated", project); err != nil {
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit project update: %w", err)
+	}
+	return nil
+}
+
 func (r *Repository) DeleteProject(ctx context.Context, name string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -192,6 +247,77 @@ func (r *Repository) GetDatabaseInstance(ctx context.Context, projectName, name 
 		WHERE p.organization_id = $1 AND p.name = $2 AND d.name = $3 AND p.deleted_at IS NULL AND d.deleted_at IS NULL`
 	row := r.db.QueryRowContext(ctx, query, r.organizationID, projectName, name)
 	return scanDatabaseInstance(row)
+}
+
+func (r *Repository) UpdateDatabaseInstance(ctx context.Context, projectName, name string, instance *api.DatabaseInstance) error {
+	if instance == nil {
+		return errors.New("database instance is required")
+	}
+	instance.Normalize()
+	instance.Metadata.Project = projectName
+	instance.Metadata.Name = name
+	if err := instance.Validate(); err != nil {
+		return err
+	}
+	storage, err := json.Marshal(instance.Spec.Storage)
+	if err != nil {
+		return fmt.Errorf("marshal storage: %w", err)
+	}
+	backup, err := json.Marshal(instance.Spec.Backup)
+	if err != nil {
+		return fmt.Errorf("marshal backup: %w", err)
+	}
+	network, err := json.Marshal(instance.Spec.Network)
+	if err != nil {
+		return fmt.Errorf("marshal network: %w", err)
+	}
+	spec, err := json.Marshal(instance.Spec)
+	if err != nil {
+		return fmt.Errorf("marshal database spec: %w", err)
+	}
+	labels, err := json.Marshal(instance.Metadata.Labels)
+	if err != nil {
+		return fmt.Errorf("marshal labels: %w", err)
+	}
+	annotations, err := json.Marshal(instance.Metadata.Annotations)
+	if err != nil {
+		return fmt.Errorf("marshal annotations: %w", err)
+	}
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin database update: %w", err)
+	}
+	defer tx.Rollback()
+	var id string
+	if err := tx.QueryRowContext(ctx, `
+		SELECT d.id::text FROM database_instances d JOIN projects p ON p.id = d.project_id
+		WHERE p.organization_id = $1 AND p.name = $2 AND d.name = $3 AND d.deleted_at IS NULL FOR UPDATE`, r.organizationID, projectName, name).Scan(&id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("find database instance: %w", err)
+	}
+	var generation int64
+	var updatedAt time.Time
+	if err := tx.QueryRowContext(ctx, `
+		UPDATE database_instances SET engine = $1, version = $2, plan = $3, replicas = $4, shards = $5,
+			storage = $6::jsonb, backup = $7::jsonb, network = $8::jsonb, spec = $9::jsonb,
+			labels = $10::jsonb, annotations = $11::jsonb, generation = generation + 1
+		WHERE id = $12
+		RETURNING generation, updated_at`, instance.Spec.Engine, instance.Spec.Version, instance.Spec.Plan, instance.Spec.Replicas, instance.Spec.Shards, storage, backup, network, spec, labels, annotations, id).
+		Scan(&generation, &updatedAt); err != nil {
+		return fmt.Errorf("update database instance: %w", err)
+	}
+	instance.Metadata.UID = id
+	instance.Metadata.Generation = generation
+	instance.Status.LastReconciledAt = &updatedAt
+	if err := insertOutbox(ctx, tx, "DatabaseInstance", id, "DatabaseInstanceUpdated", instance); err != nil {
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit database update: %w", err)
+	}
+	return nil
 }
 
 func (r *Repository) ListDatabaseInstances(ctx context.Context, projectName string) ([]api.DatabaseInstance, error) {

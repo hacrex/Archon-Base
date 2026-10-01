@@ -36,19 +36,21 @@
 - [ ] Add request IDs and structured JSON logging.
 - [ ] Add HTTP server timeouts and graceful shutdown.
 - [ ] Add `/livez` and dependency-aware `/readyz`.
-- [ ] Implement Project endpoints:
-  - [ ] `POST /v1/projects`
-  - [ ] `GET /v1/projects/{project}`
-  - [ ] `PATCH /v1/projects/{project}`
-  - [ ] `DELETE /v1/projects/{project}`
-- [ ] Implement DatabaseInstance endpoints:
-  - [ ] `POST /v1/projects/{project}/databases`
-  - [ ] `GET /v1/projects/{project}/databases/{name}`
-  - [ ] `LIST /v1/projects/{project}/databases`
-  - [ ] `DELETE /v1/projects/{project}/databases/{name}`
+- [x] Implement Project endpoints:
+  - [x] `POST /v1/projects`
+  - [x] `GET /v1/projects/{project}`
+  - [x] `PATCH /v1/projects/{project}`
+  - [x] `DELETE /v1/projects/{project}`
+- [x] Implement DatabaseInstance endpoints:
+  - [x] `POST /v1/projects/{project}/databases`
+  - [x] `GET /v1/projects/{project}/databases/{name}`
+  - [x] `LIST /v1/projects/{project}/databases`
+  - [x] `PATCH /v1/projects/{project}/databases/{name}`
+  - [x] `DELETE /v1/projects/{project}/databases/{name}`
 - [ ] Support idempotency keys for mutating requests.
 - [x] Add API unit tests.
-- [ ] Add API and PostgreSQL integration tests.
+- [x] Add API handler and routing tests.
+- [x] Add PostgreSQL repository integration tests using testcontainers-go.
 
 ## 2. PostgreSQL control plane
 
