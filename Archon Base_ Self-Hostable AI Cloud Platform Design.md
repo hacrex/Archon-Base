@@ -168,7 +168,7 @@ metadata:
   project: support-bot
 spec:
   runtime: python3.12
-  entrypoint: app.main:handle
+  entrypoint: app:handle
   source: { git: "https://git.example.com/org/support-agent", ref: main }
   triggers:
     - http: { path: /chat, auth: project-key }

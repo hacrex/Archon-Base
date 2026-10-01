@@ -90,7 +90,7 @@ metadata:
   project: support-bot
 spec:
   runtime: python3.12
-  entrypoint: app.main:handle
+  entrypoint: app:handle
   isolation: sandbox
   bindings:
     vector: [ { instance: docs-index, access: read-write } ]
@@ -122,11 +122,13 @@ Dependencies for production: Linux kernel 5.10 or newer, containerd, Kubernetes 
 ## Documentation
 
 - [Technical Design Document](docs/technical-design-document.md): architecture, engine comparison, security, deployment, roadmap.
+- [Core v1 Resource Schema](docs/core-v1-resource-schema.md): the shared Project and DatabaseInstance contract.
+- [Phase 1 Local Execution Specification](docs/phase-1-local-execution-spec.md): the local vertical slice without Kubernetes.
 - [Contributing](CONTRIBUTING.md)
 
 ## License
 
-To be decided. Update this section and add a `LICENSE` file before the first public release.
+Archon Base is licensed under the [Apache License 2.0](LICENSE). Third-party integrations may have separate licenses; review their terms before bundling or redistributing them.
 
 ## Naming note
 

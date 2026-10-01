@@ -1,4 +1,4 @@
-.PHONY: build run test fmt up down
+.PHONY: build run test fmt fmt-check up down
 
 build:
 	go build -o bin/archon-api ./cmd/archon-api
@@ -11,7 +11,10 @@ test:
 	go test ./...
 
 fmt:
-	gofmt -w .
+	gofmt -w $$(find . -type f -name '*.go' -not -path './vendor/*')
+
+fmt-check:
+	test -z "$$(gofmt -l $$(find . -type f -name '*.go' -not -path './vendor/*'))"
 
 up:
 	docker compose -f deploy/docker-compose.yml up --build

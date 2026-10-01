@@ -1,3 +1,3 @@
-module github.com/your-org/archon-base
+module github.com/hacrex/Archon-Base
 
 go 1.22
