@@ -1,0 +1,15 @@
+# Engine Package: Qdrant (default vector engine)
+name: qdrant
+license: Apache-2.0
+chart: oci://registry.example.com/charts/qdrant
+configSchema: ./config.schema.json
+health:
+  readiness: /readyz
+  liveness: /livez
+backup:
+  strategy: snapshot
+  target: object-storage
+upgrade:
+  policy: rolling
+  preflight: [version-compat, snapshot-before-upgrade]
+conformance: ./conformance/

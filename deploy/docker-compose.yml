@@ -1,0 +1,33 @@
+# Single-node dev stack. Not for production.
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      ARCHON_API_ADDR: ":8080"
+      ARCHON_DB_URL: postgres://archon:archon@postgres:5432/archon?sslmode=disable
+      ARCHON_NATS_URL: nats://nats:4222
+    ports: ["8080:8080"]
+    depends_on: [postgres, nats]
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: archon
+      POSTGRES_PASSWORD: archon
+      POSTGRES_DB: archon
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  nats:
+    image: nats:2
+    command: ["-js"]
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: [qdrant:/qdrant/storage]
+
+volumes:
+  pgdata: {}
+  qdrant: {}

@@ -1,0 +1,20 @@
+# Engine Package: Chroma (developer-friendly tier)
+name: chroma
+license: Apache-2.0
+mode:
+  embedded: true        # used by `archon dev` local emulator
+  server: true          # single-node server for small production workloads
+image: chromadb/chroma:latest
+configSchema: ./config.schema.json
+health:
+  readiness: /api/v2/heartbeat
+backup:
+  strategy: volume-snapshot
+  target: object-storage
+upgrade:
+  policy: recreate-with-snapshot
+  preflight: [snapshot-before-upgrade, version-compat]
+notes: >
+  Best for prototypes, dev environments and small production workloads.
+  Verify the current state of Chroma's distributed mode before offering
+  it as a scale tier.

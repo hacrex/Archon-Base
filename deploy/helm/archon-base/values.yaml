@@ -1,0 +1,10 @@
+image:
+  repository: ghcr.io/your-org/archon-api
+  tag: "0.0.1-dev"
+replicaCount: 2
+service:
+  port: 8080
+postgres:
+  external: false
+nats:
+  external: false

@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chroma engine config",
+  "type": "object",
+  "properties": {
+    "persistence": { "type": "boolean", "default": true },
+    "auth": { "type": "string", "enum": ["none", "token"], "default": "token" },
+    "storageSize": { "type": "string", "default": "20Gi" }
+  }
+}

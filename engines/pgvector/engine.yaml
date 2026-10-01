@@ -1,0 +1,11 @@
+# Engine Package: pgvector via CloudNativePG
+name: pgvector
+license: PostgreSQL
+operator: cloudnative-pg
+health:
+  readiness: pg_isready
+backup:
+  strategy: wal-archive
+  target: object-storage
+upgrade:
+  policy: rolling

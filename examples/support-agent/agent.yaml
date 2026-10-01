@@ -1,0 +1,21 @@
+apiVersion: archon.dev/v1
+kind: AgentFunction
+metadata:
+  name: support-agent
+  project: support-bot
+spec:
+  runtime: python3.12
+  entrypoint: app.main:handle
+  source: { git: "https://git.example.com/org/support-agent", ref: main }
+  triggers:
+    - http: { path: /chat, auth: project-key }
+    - event: { subject: "storage.support-docs.created" }
+  resources: { cpu: "1", memory: 1Gi, timeout: 300s, concurrency: 10, gpu: 0 }
+  isolation: sandbox
+  bindings:
+    vector:  [ { instance: docs-index, access: read-write } ]
+    storage: [ { bucket: support-docs, access: read } ]
+    models:  [ { alias: chat-llm } ]
+    tools:   [ { name: crm-lookup, approval: required } ]
+  secrets: [ CRM_API_TOKEN ]
+  egress: { allow: ["api.crm.example.com"] }

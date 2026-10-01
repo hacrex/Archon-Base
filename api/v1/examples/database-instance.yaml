@@ -1,0 +1,14 @@
+apiVersion: archon.dev/v1
+kind: DatabaseInstance
+metadata:
+  name: docs-index
+  project: support-bot
+spec:
+  engine: qdrant
+  version: "1.x"
+  plan: standard-2
+  replicas: 3
+  shards: 2
+  storage: { class: fast-ssd, size: 200Gi }
+  backup: { schedule: "0 2 * * *", retention: 14d, target: bucket://backups }
+  network: { exposure: private }
