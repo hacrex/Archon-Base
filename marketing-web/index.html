@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Archon Base is the open-source infrastructure layer for self-hosted AI applications." />
+    <title>Archon Base — AI infrastructure you control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-header>
+      <a class="wordmark" href="#top" aria-label="Archon Base home"><span class="wordmark-mark">◼</span> ARCHON BASE</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span>MENU</span><span aria-hidden="true">☰</span></button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+        <a href="#platform">Platform</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#developers">Developers</a>
+        <a href="https://github.com/hacrex/Archon-Base" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a class="button button-lime button-small" href="#start">Get started <span>→</span></a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero section-shell">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><span class="status-dot"></span> OPEN SOURCE · SELF HOSTED · KUBERNETES NATIVE</p>
+          <h1>THE OPEN-SOURCE <em>INFRASTRUCTURE</em> LAYER FOR AI.</h1>
+          <p class="hero-lede">Run agents, models, vector databases, tools and GPU workloads on infrastructure you control.</p>
+          <div class="hero-actions">
+            <a class="button button-lime" href="#start">Get started <span>→</span></a>
+            <a class="button button-ghost" href="https://github.com/hacrex/Archon-Base" target="_blank" rel="noreferrer">View GitHub <span>↗</span></a>
+          </div>
+        </div>
+        <div class="hero-panel reveal reveal-delay-1" aria-label="Archon Base infrastructure status panel">
+          <div class="panel-topline"><span>ARCHON CONTROL PLANE</span><span class="panel-live"><span class="status-dot"></span> LIVE</span></div>
+          <div class="panel-grid">
+            <div class="panel-node panel-node-wide"><span class="node-label">CONTROL PLANE</span><strong>ARCHON BASE</strong><small>API · CLI · RECONCILER</small></div>
+            <div class="panel-node"><span class="node-label">HEALTH</span><strong class="lime-text">99.98%</strong><small>ALL SYSTEMS NOMINAL</small></div>
+            <div class="panel-node"><span class="node-label">GPU UTILIZATION</span><strong>72%</strong><div class="meter"><i style="width:72%"></i></div><small>8 × NVIDIA L40S</small></div>
+            <div class="panel-node panel-node-wide"><span class="node-label">DATA PLANE</span><strong>KUBERNETES CLUSTER</strong><small>QDRANT · VLLM · NATS · S3 · CILIUM</small></div>
+          </div>
+          <div class="panel-footer"><span>REGION: SELF-HOSTED</span><span>MODE: PROVIDER-NEUTRAL</span></div>
+        </div>
+        <div class="hero-annotations" aria-hidden="true"><span>01 / CONTROL</span><span>02 / OPERATE</span><span>03 / OWN</span></div>
+      </section>
+
+      <section class="tech-strip section-shell" aria-label="Technology ecosystem">
+        <p class="eyebrow">BUILT AROUND OPEN TECHNOLOGY</p>
+        <div class="tech-list"><span>KUBERNETES</span><span>QDRANT</span><span>vLLM</span><span>NATS</span><span>CILIUM</span><span>OPENBAO</span><span>S3</span><span>OPENTELEMETRY</span></div>
+      </section>
+
+      <section id="platform" class="problem section-shell section-pad">
+        <div class="section-kicker">02 / THE STACK</div>
+        <div class="split-heading"><h2>AI INFRASTRUCTURE <span>IS A STACK.</span></h2><div><p>Every AI application eventually needs more than a model.</p><p class="muted">Kubernetes. GPUs. Model servers. Vector databases. Object storage. Secrets. Networking. Sandboxing. Observability.</p></div></div>
+        <div class="stack-list" aria-label="AI infrastructure stack"><div><b>01</b><span>KUBERNETES</span><small>ORCHESTRATION</small></div><div><b>02</b><span>GPU OPERATOR</span><small>COMPUTE</small></div><div><b>03</b><span>MODEL SERVER</span><small>INFERENCE</small></div><div><b>04</b><span>VECTOR DB</span><small>KNOWLEDGE</small></div><div><b>05</b><span>OBJECT STORAGE</span><small>ARTIFACTS</small></div><div><b>06</b><span>SECRETS</span><small>IDENTITY</small></div><div><b>07</b><span>NETWORKING</span><small>EGRESS</small></div><div><b>08</b><span>OBSERVABILITY</span><small>CONTROL</small></div></div>
+        <p class="closing-statement">WHY ASSEMBLE THE SAME INFRASTRUCTURE EVERY TIME?</p>
+      </section>
+
+      <section id="architecture" class="control-plane section-shell section-pad">
+        <div class="section-kicker">03 / THE CONTROL PLANE</div>
+        <div class="split-heading"><h2>ALL OF THIS.<br /><span>ONE CONTROL PLANE.</span></h2><p>Provision and operate the infrastructure behind AI applications through one API, CLI and control plane.</p></div>
+        <div class="architecture-diagram" role="img" aria-label="Archon Base connects agents, models and data to a Kubernetes data plane">
+          <div class="arch-root">ARCHON BASE<small>CONTROL PLANE</small></div>
+          <div class="arch-branches"><div><strong>AGENTS</strong><span>Runtime<br />Sandbox<br />Tools</span></div><div><strong>MODELS</strong><span>Gateway<br />Routing<br />Inference</span></div><div><strong>DATA</strong><span>Vector DB<br />Storage<br />Knowledge</span></div></div>
+          <div class="arch-line"></div><div class="arch-kube">KUBERNETES DATA PLANE <small>COMPUTE · DATA · NETWORK</small></div>
+        </div>
+      </section>
+
+      <section class="capabilities section-shell section-pad">
+        <div class="section-kicker">04 / CAPABILITIES</div><h2 class="section-title">THE PARTS THAT<br /><span>MAKE IT OPERABLE.</span></h2>
+        <div class="capability-grid">
+          <article class="capability-card"><span class="cap-number">01</span><h3>AGENTS</h3><p>Deploy isolated AI agents, tools and background workloads.</p><small>RUNTIME · SANDBOX · TOOLS</small></article>
+          <article class="capability-card lime-card"><span class="cap-number">02</span><h3>MODELS</h3><p>Route local, self-hosted and external models through one gateway.</p><small>vLLM · PROVIDERS · ROUTING</small></article>
+          <article class="capability-card"><span class="cap-number">03</span><h3>DATA</h3><p>Provision vector databases, object storage and knowledge infrastructure.</p><small>QDRANT · S3 · RAG</small></article>
+          <article class="capability-card"><span class="cap-number">04</span><h3>TOOLS</h3><p>Connect tools, MCP servers and external capabilities through governed bindings.</p><small>MCP · CONNECTORS · EGRESS</small></article>
+          <article class="capability-card"><span class="cap-number">05</span><h3>SECURITY</h3><p>Identity, policies, secrets, sandboxing, network controls and audit.</p><small>IAM · POLICY · AUDIT</small></article>
+          <article class="capability-card"><span class="cap-number">06</span><h3>OBSERVABILITY</h3><p>Trace workloads, inspect infrastructure and measure usage.</p><small>TRACES · EVALS · GOVERNANCE</small></article>
+        </div>
+      </section>
+
+      <section class="how-it-works section-shell section-pad"><div class="section-kicker">05 / HOW IT WORKS</div><div class="flow"><div><span>01</span><strong>APPLICATION</strong><small>Open WebUI · Dify · Custom</small></div><i>↓</i><div class="flow-active"><span>02</span><strong>ARCHON BASE</strong><small>API · CLI · Reconciler</small></div><i>↓</i><div><span>03</span><strong>KUBERNETES DATA PLANE</strong><small>Compute · Data · Network</small></div></div></section>
+
+      <section class="ecosystem section-shell section-pad"><div class="section-kicker">06 / ECOSYSTEM</div><div class="split-heading"><h2>USE THE TOOLS<br /><span>YOU ALREADY USE.</span></h2><p>Archon Base doesn't replace the AI ecosystem. It operates the infrastructure underneath it.</p></div><div class="ecosystem-map"><div>OPEN WEBUI</div><div>DIFY</div><div>LANGFLOW</div><div class="eco-core">ARCHON BASE</div><div>CUSTOM APPS</div><div>MCP</div><div>OPENAI-COMPATIBLE CLIENTS</div></div></section>
+
+      <section id="developers" class="developer section-shell section-pad"><div class="section-kicker">07 / DEVELOPER EXPERIENCE</div><div class="split-heading"><h2>DECLARE IT.<br /><span>ARCHON OPERATES IT.</span></h2><p>Define infrastructure declaratively. Let the control plane reconcile resources into the Kubernetes data plane.</p></div><div class="terminal-window"><div class="terminal-bar"><span class="terminal-dots">● ● ●</span><span>archon-cli / zsh</span><span>LOCAL</span></div><pre><code><span class="code-muted">$</span> archon init my-ai-app
+
+<span class="code-ok">✓</span> Project created
+<span class="code-ok">✓</span> Kubernetes connection established
+<span class="code-ok">✓</span> Model gateway configured
+<span class="code-ok">✓</span> Qdrant provisioned
+<span class="code-ok">✓</span> Object storage configured
+<span class="code-ok">✓</span> Agent runtime ready
+
+<span class="code-muted">$</span> archon deploy agent.yaml
+<span class="cursor">█</span></code></pre></div></section>
+
+      <section class="iac section-shell section-pad"><div class="section-kicker">08 / INFRASTRUCTURE AS CODE</div><div class="code-layout"><div><h2>YOUR INTENT<br /><span>IS THE API.</span></h2><p>Keep infrastructure in version control. Review it, reproduce it, own it.</p></div><div class="yaml-window"><div class="yaml-header">agent-function.yaml <span>YAML</span></div><pre><code><span class="yaml-key">apiVersion:</span> archon.dev/v1
+<span class="yaml-key">kind:</span> AgentFunction
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> support-agent
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">runtime:</span> python:3.12
+  <span class="yaml-key">entrypoint:</span> app:handle
+  <span class="yaml-key">isolation:</span> sandbox</code></pre></div></div></section>
+
+      <section class="security section-shell section-pad"><div class="section-kicker">09 / SECURITY</div><div class="split-heading"><h2>SECURITY IS<br /><span>NOT AN ADD-ON.</span></h2><p>AI workloads need stronger boundaries around identity, execution, networking, credentials, tools and data.</p></div><div class="security-flow"><span>USER</span><i>↓</i><span>IDENTITY</span><i>↓</i><span>POLICY</span><i>↓</i><span>BINDING</span><i>↓</i><span>CREDENTIAL</span><i>↓</i><span>RESOURCE</span></div><p class="security-labels">IDENTITY · POLICY · SANDBOX · NETWORK · SECRETS · EGRESS · AUDIT</p></section>
+
+      <section class="deployment section-shell section-pad"><div class="section-kicker">10 / DEPLOYMENT</div><h2 class="section-title">FROM A SINGLE SERVER<br /><span>TO A PRIVATE AI CLOUD.</span></h2><p class="deployment-copy">Start small. Grow into a Kubernetes cluster. Keep the same platform model as your infrastructure scales.</p><div class="deployment-rail"><span>ONE SERVER</span><i>→</i><span>TEAM CLUSTER</span><i>→</i><span>GPU CLUSTER</span><i>→</i><span>PRIVATE CLOUD</span><i>→</i><span>AIR-GAPPED</span></div></section>
+
+      <section class="open-source section-shell section-pad"><div class="section-kicker">11 / OPEN SOURCE</div><div class="open-source-grid"><h2>YOUR AI.<br />YOUR INFRASTRUCTURE.<br /><span>YOUR CONTROL.</span></h2><div><p>Self-host Archon Base on infrastructure you own. Use open components, choose your model providers and keep your architecture portable.</p><ul><li>SELF-HOSTABLE</li><li>OPEN ARCHITECTURE</li><li>PROVIDER-NEUTRAL</li><li>KUBERNETES-NATIVE</li><li>ADAPTER-FIRST</li><li>PORTABLE</li></ul></div></div></section>
+
+      <section id="start" class="final-cta section-shell section-pad"><p class="eyebrow">THE INFRASTRUCTURE LAYER FOR AI</p><h2>BUILD YOUR AI CLOUD.<br /><span>OWN YOUR INFRASTRUCTURE.</span></h2><div class="hero-actions"><a class="button button-lime" href="https://github.com/hacrex/Archon-Base" target="_blank" rel="noreferrer">View on GitHub <span>↗</span></a><a class="button button-ghost" href="https://github.com/hacrex/Archon-Base/tree/main/docs" target="_blank" rel="noreferrer">Read the docs <span>→</span></a></div></section>
+    </main>
+
+    <footer class="site-footer section-shell"><div><a class="wordmark" href="#top"><span class="wordmark-mark">◼</span> ARCHON BASE</a><p>Open-source AI infrastructure.</p></div><div class="footer-links"><a href="#platform">Platform</a><a href="#architecture">Architecture</a><a href="#developers">Developers</a><a href="https://github.com/hacrex/Archon-Base" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/hacrex/Archon-Base/issues" target="_blank" rel="noreferrer">Community</a></div><p class="copyright">© 2026 Archon Base</p></footer>
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -104,6 +104,19 @@ If implementation has not already been chosen:
 
 Avoid unnecessary UI libraries if they fight the visual language.
 
+## Local implementation
+
+The first build is intentionally plain local and dependency-light: semantic HTML, one CSS file, and a small progressive-enhancement script. It can be previewed without installing a JavaScript toolchain:
+
+```bash
+cd marketing-web
+python3 -m http.server 4173
+```
+
+Then open `http://127.0.0.1:4173/`. The page route manifest is available at `/manus-routes.json`.
+
+The homepage currently includes the responsive hero, infrastructure status panel, technology strip, stack/problem section, control-plane diagram, capabilities, ecosystem map, terminal and YAML examples, security flow, deployment rail, open-source positioning, final CTA, and mobile navigation.
+
 ## Important Product Rule
 
 Do not present roadmap features as shipped features.
