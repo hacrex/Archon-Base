@@ -113,17 +113,21 @@ Full examples are in `api/v1/examples/` and `examples/support-agent/`.
 
 | Profile | CPU | RAM | Disk |
 |---|---|---|---|
+| Enthusiast / K3s practice | 2 CPU cores | 8 GB | 20 GB free space |
 | Single node (evaluation) | 4 vCPU | 16 GB | 100 GB SSD |
 | Team (3 nodes) | 8 vCPU each | 32 GB each | 500 GB NVMe each |
 | Production | Workload dependent | Vector RAM at about 1.5 to 2x raw index size | NVMe for databases |
 
-Dependencies for production: Linux kernel 5.10 or newer, containerd, Kubernetes 1.28 or newer, a CSI driver, a load balancer, cert-manager, and optionally the NVIDIA GPU Operator.
+The enthusiast profile is intended for students and local K3s practice. It also assumes **1 GB graphics memory** for lightweight graphics/GPU experiments; model inference, large vector indexes, and concurrent workloads need more capacity.
+
+See [Self-hosting Requirements](docs/self-hosting-requirements.md) for the student setup and profile guidance. Dependencies for production: Linux kernel 5.10 or newer, containerd, Kubernetes 1.28 or newer, a CSI driver, a load balancer, cert-manager, and optionally the NVIDIA GPU Operator.
 
 ## Documentation
 
 - [Technical Design Document](docs/technical-design-document.md): architecture, engine comparison, security, deployment, roadmap.
 - [Core v1 Resource Schema](docs/core-v1-resource-schema.md): the shared Project and DatabaseInstance contract.
 - [Phase 1 Local Execution Specification](docs/phase-1-local-execution-spec.md): the local vertical slice without Kubernetes.
+- [Self-hosting Requirements](docs/self-hosting-requirements.md): enthusiast/K3s practice profile and larger deployment starting points.
 - [Contributing](CONTRIBUTING.md)
 
 ## License

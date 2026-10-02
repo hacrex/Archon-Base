@@ -37,6 +37,12 @@ The local runner must display a warning that it is a trusted developer subproces
 
 ## 3. Prerequisites
 
+- Recommended enthusiast / student practice hardware:
+  - 8 GB RAM
+  - 2 CPU cores
+  - 1 GB graphics memory
+  - 20 GB of free disk space for images, local data, and logs
+  - This profile is suitable for a single-node K3s practice environment and lightweight workloads; it is not a production sizing recommendation.
 - Go 1.22+
 - Python 3.12+
 - Docker Engine and Compose v2

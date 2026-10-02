@@ -12,6 +12,7 @@
 - [x] Add PostgreSQL migrations for Projects, DatabaseInstances, and outbox events.
 - [x] Add Phase 1 local execution specification.
 - [x] Add baseline security, threat-modeling, monitoring, and incident-response guidance.
+- [x] Document the enthusiast/student self-hosting profile: 8 GB RAM, 2 CPU cores, 1 GB graphics memory, and single-node K3s practice guidance.
 - [ ] Add GitHub Actions CI.
   - [ ] `go test ./...`
   - [ ] `go vet ./...`
