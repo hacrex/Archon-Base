@@ -128,6 +128,7 @@ See [Self-hosting Requirements](docs/self-hosting-requirements.md) for the stude
 - [Core v1 Resource Schema](docs/core-v1-resource-schema.md): the shared Project and DatabaseInstance contract.
 - [Phase 1 Local Execution Specification](docs/phase-1-local-execution-spec.md): the local vertical slice without Kubernetes.
 - [Self-hosting Requirements](docs/self-hosting-requirements.md): enthusiast/K3s practice profile and larger deployment starting points.
+- [Student K3s Setup](docs/student-k3s-setup.md): prerequisite checks, single-node installation, and local monitoring.
 - [Contributing](CONTRIBUTING.md)
 
 ## License

@@ -13,6 +13,8 @@
 - [x] Add Phase 1 local execution specification.
 - [x] Add baseline security, threat-modeling, monitoring, and incident-response guidance.
 - [x] Document the enthusiast/student self-hosting profile: 8 GB RAM, 2 CPU cores, 1 GB graphics memory, and single-node K3s practice guidance.
+- [x] Add a prerequisite-aware K3s installation script for the student profile.
+- [x] Add a local resource monitoring daemon with JSON status, health, and Prometheus metrics endpoints.
 - [ ] Add GitHub Actions CI.
   - [ ] `go test ./...`
   - [ ] `go vet ./...`

@@ -1,0 +1,25 @@
+[Unit]
+Description=Archon Base local resource monitor
+Documentation=https://github.com/hacrex/Archon-Base/blob/main/docs/self-hosting-requirements.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/archon-monitor -listen 127.0.0.1:9105 -data-dir /var/lib/archon-monitor -disk-path /var/lib/rancher/k3s
+Restart=on-failure
+RestartSec=5s
+User=archon
+Group=archon
+StateDirectory=archon-monitor
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/proc/meminfo /proc/loadavg /var/lib/rancher/k3s
+ReadWritePaths=/var/lib/archon-monitor
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
