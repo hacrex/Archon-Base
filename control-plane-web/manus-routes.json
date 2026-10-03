@@ -1,0 +1,36 @@
+{
+  "routes": [
+    {
+      "path": "/overview",
+      "title": "Control plane overview"
+    },
+    {
+      "path": "/projects",
+      "title": "Projects"
+    },
+    {
+      "path": "/resources",
+      "title": "Resources"
+    },
+    {
+      "path": "/resources/allocation",
+      "title": "Resource allocation"
+    },
+    {
+      "path": "/operations",
+      "title": "Operations"
+    },
+    {
+      "path": "/admin",
+      "title": "Admin panel"
+    },
+    {
+      "path": "/audit",
+      "title": "Audit log"
+    },
+    {
+      "path": "/settings",
+      "title": "Settings"
+    }
+  ]
+}

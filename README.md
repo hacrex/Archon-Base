@@ -4,7 +4,7 @@
 
 Archon Base is an open-source platform that does for AI workloads what Appwrite and Supabase do for classic apps. One install gives you managed vector databases, serverless agent functions, and S3-compatible storage for models and datasets, behind one API, one CLI, and one auth model.
 
-> Status: design and scaffold stage. The control plane skeleton runs, but most features are not implemented yet. See the roadmap below.
+> Status: foundation and preview stage. The Project/DatabaseInstance API foundations, PostgreSQL startup wiring, migration runner, student K3s tooling, and local dashboard preview exist; authentication, reconciliation, and most platform features are not implemented yet. Start with the [New User Guide](docs/NEW_USER_GUIDE.md).
 
 ## Why Archon Base
 
@@ -40,12 +40,12 @@ archon-base/
   docs/                    Technical Design Document
 ```
 
-## Quick start (dev)
+## Quick start (dev preview)
 
 Requirements: Go 1.22 or newer, Docker with Compose.
 
 ```bash
-# run the API locally
+# run the API locally (set ARCHON_DB_URL to enable resource persistence)
 make run
 curl localhost:8080/healthz
 
@@ -130,6 +130,8 @@ See [Self-hosting Requirements](docs/self-hosting-requirements.md) for the stude
 - [Self-hosting Requirements](docs/self-hosting-requirements.md): enthusiast/K3s practice profile and larger deployment starting points.
 - [Student K3s Setup](docs/student-k3s-setup.md): prerequisite checks, single-node installation, and local monitoring.
 - [Product Control Plane TODO](PRODUCT_CONTROL_PLANE_TODO.md): UI, dashboard, admin panel, security, operations, and phased product delivery backlog.
+- [Control Plane UI](control-plane-web/README.md): local dashboard, resources, operations, admin, audit, and settings preview.
+- [New User Guide](docs/NEW_USER_GUIDE.md): a simple explanation of the architecture, current capabilities, and first real product slice.
 - [Contributing](CONTRIBUTING.md)
 
 ## License

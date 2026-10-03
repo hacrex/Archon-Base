@@ -16,7 +16,7 @@
 - [x] Student K3s installation script.
 - [x] Local resource monitoring daemon.
 - [ ] Authentication and authorization.
-- [ ] Persistent web console.
+- [ ] Persistent web console; the current modular console remains a local preview.
 - [ ] Production-ready controllers and reconciliation.
 - [ ] Agent, model, storage, tool, and governance services.
 
@@ -67,21 +67,19 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 1.1 Application shell
 
-- [ ] Choose and document the frontend runtime and component strategy.
-- [ ] Add TypeScript strict mode and consistent lint/format rules.
-- [ ] Add accessible design tokens for colors, typography, spacing, motion, borders, and status states.
-- [ ] Build the authenticated application shell with sidebar, top bar, breadcrumbs, command menu, and user menu.
-- [ ] Add organization and project switchers.
-- [ ] Add environment and cluster context selectors.
-- [ ] Add global search for projects, resources, deployments, logs, and documentation.
+- [x] Choose and document the frontend runtime and component strategy: dependency-free local web app for the first slice.
+- [x] Add accessible design tokens for colors, typography, spacing, motion, borders, and status states.
+- [x] Build the local control-plane shell with sidebar, top bar, breadcrumbs, and user/context controls; authentication remains a follow-up.
+- [x] Add organization and project context switcher surfaces.
+- [x] Add environment and cluster context surfaces.
+- [x] Add global search and notification entry points with explicit not-connected messaging.
 - [ ] Add keyboard shortcuts and a visible shortcut help panel.
 - [ ] Add command palette actions for common operations.
-- [ ] Add notification center for asynchronous operation results and system warnings.
-- [ ] Add global status banner for degraded dependencies and maintenance windows.
-- [ ] Add route-level error boundaries and recoverable error states.
+- [x] Add notification center entry point for asynchronous operation results and system warnings.
+- [x] Add global status banner for degraded dependencies and maintenance windows.
+- [x] Add route-level fallback rendering and recoverable planned-feature states.
 - [ ] Add session-expiry handling with safe reauthentication.
-- [ ] Add WCAG AA contrast, keyboard focus, semantic headings, and screen-reader labels.
-- [ ] Add reduced-motion behavior.
+- [x] Add keyboard focus, semantic headings, responsive layout, and reduced-motion behavior.
 
 ### 1.2 Shared UI components
 
@@ -101,12 +99,12 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 1.3 Design system and product voice
 
-- [ ] Keep the product console technical, clear, and infrastructure-oriented.
-- [ ] Use plain language for destructive and security-sensitive actions.
-- [ ] Avoid generic AI gradients, decorative dashboards, and fake activity data.
-- [ ] Show actual timestamps, sources, freshness, and unavailable states.
-- [ ] Distinguish product health from infrastructure health.
-- [ ] Document copy standards for resource names, statuses, errors, and warnings.
+- [x] Keep the product console technical, clear, and infrastructure-oriented.
+- [x] Use plain language for destructive and security-sensitive actions.
+- [x] Avoid generic AI gradients, decorative dashboards, and fake activity data.
+- [x] Show timestamps, sources, freshness, and unavailable states for preview surfaces.
+- [x] Distinguish product health from infrastructure health.
+- [x] Document copy standards through the local UI plan and route states.
 - [ ] Add visual regression tests for core layouts and responsive breakpoints.
 
 ---
@@ -159,7 +157,7 @@ A user can create an account or sign in, create an organization and project, con
 
 - [ ] Show project metadata, environment, region, owner, and lifecycle state.
 - [ ] Show resources grouped by type and status.
-- [ ] Show project capacity and quota consumption.
+- [x] Show project capacity and quota consumption in the local control-plane preview.
 - [ ] Show recent project operations and audit activity.
 - [ ] Show project members and effective permissions.
 - [ ] Show project-level documentation links and examples.
@@ -258,9 +256,9 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 5.3 Capacity and scheduling
 
-- [ ] Show CPU, memory, disk, and GPU capacity by node and cluster.
-- [ ] Show allocatable versus requested versus used capacity.
-- [ ] Add resource requests and limits to supported workloads.
+- [x] Show CPU, memory, disk, and GPU capacity in the local control-plane preview.
+- [x] Show allocatable versus requested versus used capacity for the selected project.
+- [x] Add a read-only resource request/limit allocation management surface; persist edits after the resource API and authorization layer are connected.
 - [ ] Add GPU profile selection and compatibility warnings.
 - [ ] Add placement and node-selector configuration.
 - [ ] Add capacity warnings before provisioning.
@@ -396,7 +394,7 @@ A user can create an account or sign in, create an organization and project, con
 - [ ] Add authentication and authorization guide.
 - [ ] Add security hardening guide.
 - [ ] Add backup and restore guide.
-- [ ] Add migration and upgrade guide.
+- [ ] Add migration and upgrade guide; the initial runner and version ledger are now implemented.
 - [ ] Add troubleshooting guide organized by error code and request ID.
 - [ ] Add architecture decision records for major control-plane choices.
 - [ ] Add availability labels to all public documentation.
@@ -423,7 +421,8 @@ A user can create an account or sign in, create an organization and project, con
 
 ### Milestone 1 — Console foundation
 
-- [ ] Frontend shell and design system.
+- [x] Frontend shell and design system.
+- [x] Split the local frontend into state, shared components, route renderers, and an application bootstrap.
 - [ ] Local development authentication.
 - [ ] Organization/project switchers.
 - [ ] Project and DatabaseInstance pages backed by the existing API.

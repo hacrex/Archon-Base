@@ -7,6 +7,8 @@ services:
     environment:
       ARCHON_API_ADDR: ":8080"
       ARCHON_DB_URL: postgres://archon:archon@postgres:5432/archon?sslmode=disable
+      ARCHON_MIGRATIONS_DIR: /migrations
+      ARCHON_ORGANIZATION_ID: 00000000-0000-0000-0000-000000000001
       ARCHON_NATS_URL: nats://nats:4222
     ports: ["8080:8080"]
     depends_on: [postgres, nats]

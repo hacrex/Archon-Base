@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Archon Base local control plane dashboard preview" />
+    <title>Archon Base Control Plane</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div><strong>ARCHON</strong><small>BASE CONTROL PLANE</small></div>
+        </div>
+        <div class="context-stack">
+          <button class="context-switcher" type="button" data-action="context">
+            <span class="context-dot"></span><span><b>hacrex lab</b><small>Local organization</small></span><span class="chevron">⌄</span>
+          </button>
+          <button class="project-switcher" type="button" data-action="context">
+            <span class="project-icon">SB</span><span><b>support-bot</b><small>development</small></span><span class="chevron">⌄</span>
+          </button>
+        </div>
+        <nav class="nav-groups">
+          <div class="nav-label">OPERATE</div>
+          <a href="#/overview" data-route="overview"><span class="nav-icon">▦</span>Overview</a>
+          <a href="#/projects" data-route="projects"><span class="nav-icon">◇</span>Projects</a>
+          <a href="#/resources" data-route="resources"><span class="nav-icon">◈</span>Resources</a>
+          <a href="#/operations" data-route="operations"><span class="nav-icon">↗</span>Operations</a>
+          <div class="nav-label">GOVERN</div>
+          <a href="#/admin" data-route="admin"><span class="nav-icon">◎</span>Admin panel</a>
+          <a href="#/audit" data-route="audit"><span class="nav-icon">≡</span>Audit log</a>
+          <a href="#/settings" data-route="settings"><span class="nav-icon">⚙</span>Settings</a>
+        </nav>
+        <div class="sidebar-foot">
+          <div class="connection-pill"><span class="status-dot"></span><span><b>Local control plane</b><small>API connected · preview</small></span></div>
+          <a class="docs-link" href="../docs/student-k3s-setup.md"><span>↗</span> Student K3s setup</a>
+          <button class="user-card" type="button" data-action="user"><span class="avatar">HC</span><span><b>hacrex</b><small>Owner</small></span><span class="chevron">⌄</span></button>
+        </div>
+      </aside>
+      <main class="main-stage">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>hacrex lab</span><i>/</i><strong id="page-crumb">Overview</strong></div>
+          <div class="topbar-actions"><span class="preview-chip"><span></span> LOCAL PREVIEW</span><button class="icon-button" aria-label="Search" data-action="search">⌕</button><button class="icon-button" aria-label="Notifications" data-action="notifications">♧<em></em></button><button class="mobile-menu" aria-label="Open navigation" data-action="menu">☰</button></div>
+        </header>
+        <div class="notice-bar"><span class="notice-kicker">CONTROL PLANE / PHASE 1</span><span>This console is connected to a local preview. Future capabilities are clearly marked before they ship.</span><button data-action="dismiss-notice" aria-label="Dismiss notice">×</button></div>
+        <div id="app" class="page-content" tabindex="-1"></div>
+      </main>
+    </div>
+    <div id="modal-root"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

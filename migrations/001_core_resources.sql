@@ -2,8 +2,6 @@
 -- PostgreSQL 15+; application-generated UUIDs are supported, while pgcrypto
 -- supplies a safe default for callers that do not generate IDs themselves.
 
-BEGIN;
-
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE projects (
@@ -118,5 +116,3 @@ CREATE TRIGGER projects_set_updated_at
 CREATE TRIGGER database_instances_set_updated_at
     BEFORE UPDATE ON database_instances
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-COMMIT;

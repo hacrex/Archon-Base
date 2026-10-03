@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hacrex/Archon-Base/internal/api"
+	archondb "github.com/hacrex/Archon-Base/internal/db"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -48,12 +49,8 @@ func TestRepositoryPostgres(t *testing.T) {
 		t.Fatalf("ping postgres: %v", err)
 	}
 
-	migration, err := os.ReadFile(filepath.Join("..", "..", "migrations", "001_core_resources.sql"))
-	if err != nil {
-		t.Fatalf("read migration: %v", err)
-	}
-	if _, err := db.ExecContext(ctx, string(migration)); err != nil {
-		t.Fatalf("apply migration: %v", err)
+	if err := (archondb.MigrationRunner{Directory: filepath.Join("..", "..", "migrations")}).Run(ctx, db); err != nil {
+		t.Fatalf("apply migrations: %v", err)
 	}
 
 	repository, err := NewRepository(db, "00000000-0000-0000-0000-000000000001")

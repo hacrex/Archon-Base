@@ -22,7 +22,7 @@
   - [ ] Helm lint/template validation
   - [ ] Python package checks
   - [ ] YAML and JSON schema validation
-- [ ] Add a migration runner and `schema_migrations` table.
+- [x] Add a migration runner and `schema_migrations` table.
 - [ ] Add dependency pinning and vulnerability scanning.
 - [ ] Add a `NOTICE`/third-party attribution process.
 
@@ -72,12 +72,12 @@
 ## 3. Local development runtime
 
 - [ ] Update Compose with pinned versions and health checks.
-- [ ] Add a local PostgreSQL readiness check.
+- [x] Add a local PostgreSQL readiness check.
 - [ ] Add a local Qdrant readiness check.
 - [ ] Implement `archon dev` startup orchestration.
   - [ ] Create `.archon/` with mode `0700`.
   - [ ] Start required Compose services.
-  - [ ] Apply migrations.
+  - [x] Apply migrations.
   - [ ] Start the API.
   - [ ] Poll `/livez` and `/readyz` with a bounded timeout.
   - [ ] Write PID and context metadata.
