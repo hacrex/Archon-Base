@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+      - name: Test
+        run: go test ./... -count=1
+      - name: Vet
+        run: go vet ./...
+      - name: Format
+        run: make fmt-check
+      - name: Build
+        run: go build ./...
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in control-plane-web/app.js control-plane-web/src/*.js marketing-web/script.js; do
+            node --check "$file"
+          done
+      - name: JSON validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in control-plane-web/manus-routes.json marketing-web/manus-routes.json; do
+            python3 -m json.tool "$file" >/dev/null
+          done
+
+  python-and-yaml:
+    name: Python and YAML checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python compile
+        run: python -m compileall -q sdk/python examples/support-agent
+      - name: YAML parse
+        run: |
+          python -m pip install --disable-pip-version-check --no-input pyyaml
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          for path in Path('.').rglob('*.yaml'):
+              with path.open() as handle:
+                  list(yaml.safe_load_all(handle))
+              print(path)
+          PY
+
+  deployment:
+    name: Deployment manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+      - name: Helm lint
+        run: helm lint deploy/helm/archon-base
+      - name: Helm template
+        run: helm template archon-base deploy/helm/archon-base >/tmp/archon-rendered.yaml
+      - name: Compose config
+        run: docker compose -f deploy/docker-compose.yml config >/tmp/archon-compose.yaml
+
+  whitespace:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Diff check
+        run: git diff --check

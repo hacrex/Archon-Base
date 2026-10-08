@@ -31,6 +31,11 @@ func NewRepository(db *sql.DB, organizationID string) (*Repository, error) {
 	return &Repository{db: db, organizationID: organizationID}, nil
 }
 
+// Ready verifies that the repository database is reachable.
+func (r *Repository) Ready(ctx context.Context) error {
+	return r.db.PingContext(ctx)
+}
+
 func (r *Repository) CreateProject(ctx context.Context, project *api.Project) error {
 	if project == nil {
 		return errors.New("project is required")

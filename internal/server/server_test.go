@@ -145,3 +145,39 @@ func TestRoutesWithoutStoreReturnUnavailable(t *testing.T) {
 		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
 	}
 }
+
+func TestHealthReadinessAndRequestID(t *testing.T) {
+	srv := New(&fakeStore{})
+	for _, path := range []string{"/healthz", "/livez", "/readyz"} {
+		response := httptest.NewRecorder()
+		srv.Handler().ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+		if response.Code != http.StatusOK {
+			t.Fatalf("%s status = %d, body = %s", path, response.Code, response.Body.String())
+		}
+		if response.Header().Get("X-Request-ID") == "" {
+			t.Fatalf("%s did not return a request ID", path)
+		}
+	}
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/livez", nil)
+	request.Header.Set("X-Request-ID", "client-request-123")
+	srv.Handler().ServeHTTP(response, request)
+	if response.Header().Get("X-Request-ID") != "client-request-123" {
+		t.Fatalf("request ID was not preserved: %q", response.Header().Get("X-Request-ID"))
+	}
+}
+
+func TestValidationErrorHasStableFields(t *testing.T) {
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/v1/projects", strings.NewReader(`{"metadata":{"name":"INVALID"},"spec":{}}`))
+	New(&fakeStore{}).Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
+	}
+	body := response.Body.String()
+	for _, field := range []string{`"code":"validation_failed"`, `"requestId"`, `"fields"`, `"field":"metadata.name"`} {
+		if !strings.Contains(body, field) {
+			t.Fatalf("validation response missing %s: %s", field, body)
+		}
+	}
+}

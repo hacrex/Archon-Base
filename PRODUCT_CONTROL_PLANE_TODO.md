@@ -42,8 +42,8 @@ A user can create an account or sign in, create an organization and project, con
 
 - [ ] Version the REST API under `/v1`.
 - [ ] Publish OpenAPI for all control-plane endpoints.
-- [ ] Define stable error codes and field paths.
-- [ ] Define request IDs and correlation IDs.
+- [x] Define stable error codes and field paths.
+- [x] Define request IDs and correlation IDs.
 - [ ] Define pagination, filtering, sorting, and search conventions.
 - [ ] Define optimistic concurrency/resource-version behavior.
 - [ ] Define idempotency-key behavior for mutating requests.

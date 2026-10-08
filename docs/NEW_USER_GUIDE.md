@@ -76,9 +76,11 @@ Then check:
 ```bash
 curl http://127.0.0.1:8080/healthz
 curl http://127.0.0.1:8080/v1/version
+curl http://127.0.0.1:8080/livez
+curl http://127.0.0.1:8080/readyz
 ```
 
-These endpoints prove that the HTTP process is alive. To enable resource CRUD, provide `ARCHON_DB_URL`; the API pings PostgreSQL, applies forward migrations from `ARCHON_MIGRATIONS_DIR` (default `migrations`), and wires the repository before serving resource routes.
+`/healthz` and `/livez` prove that the HTTP process is alive. `/readyz` also checks that the configured resource store is ready. The API binds to loopback (`127.0.0.1:8080`) by default. To enable resource CRUD, provide `ARCHON_DB_URL`; the API pings PostgreSQL, applies forward migrations from `ARCHON_MIGRATIONS_DIR` (default `migrations`), and wires the repository before serving resource routes.
 
 ### Start the local dashboard preview
 

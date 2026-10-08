@@ -15,13 +15,13 @@
 - [x] Document the enthusiast/student self-hosting profile: 8 GB RAM, 2 CPU cores, 1 GB graphics memory, and single-node K3s practice guidance.
 - [x] Add a prerequisite-aware K3s installation script for the student profile.
 - [x] Add a local resource monitoring daemon with JSON status, health, and Prometheus metrics endpoints.
-- [ ] Add GitHub Actions CI.
-  - [ ] `go test ./...`
-  - [ ] `go vet ./...`
-  - [ ] `make fmt-check`
-  - [ ] Helm lint/template validation
-  - [ ] Python package checks
-  - [ ] YAML and JSON schema validation
+- [x] Add GitHub Actions CI.
+  - [x] `go test ./...`
+  - [x] `go vet ./...`
+  - [x] `make fmt-check`
+  - [x] Helm lint/template validation
+  - [x] Python package checks
+  - [x] YAML and JSON schema validation
 - [x] Add a migration runner and `schema_migrations` table.
 - [ ] Add dependency pinning and vulnerability scanning.
 - [ ] Add a `NOTICE`/third-party attribution process.
@@ -35,10 +35,10 @@
   - [x] DatabaseInstance storage, backup, and network types.
 - [x] Add strict JSON decoding and unknown-field rejection.
 - [x] Add validation for names, environments, engines, plans, quantities, replicas, and shards.
-- [ ] Define typed API errors with stable codes and field paths.
-- [ ] Add request IDs and structured JSON logging.
-- [ ] Add HTTP server timeouts and graceful shutdown.
-- [ ] Add `/livez` and dependency-aware `/readyz`.
+- [x] Define typed API errors with stable codes and field paths.
+- [x] Add request IDs and structured JSON logging.
+- [x] Add HTTP server timeouts and graceful shutdown.
+- [x] Add `/livez` and dependency-aware `/readyz`.
 - [x] Implement Project endpoints:
   - [x] `POST /v1/projects`
   - [x] `GET /v1/projects/{project}`
@@ -57,7 +57,7 @@
 
 ## 2. PostgreSQL control plane
 
-- [ ] Add a database package with bounded connection pooling.
+- [x] Add a database package with bounded connection pooling.
 - [x] Implement Project repository methods.
 - [x] Implement DatabaseInstance repository methods.
 - [x] Enforce parent/child ownership and soft-deletion rules.
@@ -188,9 +188,9 @@ Start only after the Phase 1 local definition of done is met.
 
 ## Current next action
 
-Implement the first unchecked items in Sections 1–3:
+Implement the next unchecked items in Sections 1–3:
 
-1. Add typed v1 Go resource models and validation.
-2. Add the PostgreSQL repository and migration runner.
-3. Add API tests for Project and DatabaseInstance lifecycle.
-4. Add CI so every subsequent implementation is checked automatically.
+1. Add `GET /v1/projects` with pagination and filtering.
+2. Implement `archon dev` and `archon dev down`.
+3. Implement the Qdrant adapter and reconciliation loop.
+4. Connect the dashboard to real API data.

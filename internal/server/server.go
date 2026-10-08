@@ -3,12 +3,16 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hacrex/Archon-Base/internal/api"
 	"github.com/hacrex/Archon-Base/internal/store"
@@ -18,6 +22,7 @@ import (
 var Version = "0.0.1-dev"
 
 const maxJSONBody = 1 << 20
+const requestIDHeader = "X-Request-ID"
 
 type ResourceStore interface {
 	CreateProject(context.Context, *api.Project) error
@@ -29,6 +34,10 @@ type ResourceStore interface {
 	UpdateDatabaseInstance(context.Context, string, string, *api.DatabaseInstance) error
 	ListDatabaseInstances(context.Context, string) ([]api.DatabaseInstance, error)
 	DeleteDatabaseInstance(context.Context, string, string) error
+}
+
+type readinessChecker interface {
+	Ready(context.Context) error
 }
 
 type Server struct {
@@ -48,17 +57,36 @@ func New(repositories ...ResourceStore) *Server {
 	return s
 }
 
-func (s *Server) Handler() http.Handler { return s.mux }
+// Handler returns the server with request ID and structured access-log middleware.
+func (s *Server) Handler() http.Handler {
+	return requestLogging(withRequestID(s.mux))
+}
 
 func (s *Server) routes() {
-	s.mux.HandleFunc("/healthz", s.health)
+	s.mux.HandleFunc("/healthz", s.livez)
+	s.mux.HandleFunc("/livez", s.livez)
+	s.mux.HandleFunc("/readyz", s.readyz)
 	s.mux.HandleFunc("/v1/version", s.version)
 	s.mux.HandleFunc("/v1/projects", s.projects)
 	s.mux.HandleFunc("/v1/projects/", s.projectRoutes)
 }
 
-func (s *Server) health(w http.ResponseWriter, _ *http.Request) {
+func (s *Server) livez(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
+	if s.store == nil {
+		writeError(w, http.StatusServiceUnavailable, "store_unavailable", "resource store is not configured")
+		return
+	}
+	if checker, ok := s.store.(readinessChecker); ok {
+		if err := checker.Ready(r.Context()); err != nil {
+			writeError(w, http.StatusServiceUnavailable, "dependency_unavailable", "resource store is not ready")
+			return
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 }
 
 func (s *Server) version(w http.ResponseWriter, _ *http.Request) {
@@ -251,10 +279,13 @@ func (s *Server) writeStoreError(w http.ResponseWriter, err error) {
 func routeParts(path string) []string { return strings.Split(strings.Trim(path, "/"), "/") }
 
 func decodeJSON(r *http.Request, destination any) error {
-	body := io.LimitReader(r.Body, maxJSONBody)
+	body := io.LimitReader(r.Body, maxJSONBody+1)
 	data, err := io.ReadAll(body)
 	if err != nil {
 		return err
+	}
+	if len(data) > maxJSONBody {
+		return errors.New("request body exceeds 1 MiB limit")
 	}
 	if len(strings.TrimSpace(string(data))) == 0 {
 		return errors.New("request body is required")
@@ -263,11 +294,27 @@ func decodeJSON(r *http.Request, destination any) error {
 }
 
 func writeValidationError(w http.ResponseWriter, err error) {
+	var fields api.ValidationErrors
+	if errors.As(err, &fields) {
+		writeErrorFields(w, http.StatusUnprocessableEntity, "validation_failed", "request validation failed", fields)
+		return
+	}
 	writeError(w, http.StatusUnprocessableEntity, "validation_failed", err.Error())
 }
 
+type errorResponse struct {
+	Code      string           `json:"code"`
+	Error     string           `json:"error"`
+	RequestID string           `json:"requestId,omitempty"`
+	Fields    []api.FieldError `json:"fields,omitempty"`
+}
+
 func writeError(w http.ResponseWriter, status int, code, message string) {
-	writeJSON(w, status, map[string]string{"code": code, "error": message})
+	writeErrorFields(w, status, code, message, nil)
+}
+
+func writeErrorFields(w http.ResponseWriter, status int, code, message string, fields []api.FieldError) {
+	writeJSON(w, status, errorResponse{Code: code, Error: message, RequestID: requestIDFrom(w), Fields: fields})
 }
 
 func serviceUnavailable(w http.ResponseWriter) {
@@ -283,4 +330,64 @@ func writeJSON(w http.ResponseWriter, code int, value any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_ = json.NewEncoder(w).Encode(value)
+}
+
+type requestIDKey struct{}
+
+func withRequestID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := strings.TrimSpace(r.Header.Get(requestIDHeader))
+		if id == "" || len(id) > 128 {
+			id = newRequestID()
+		}
+		w.Header().Set(requestIDHeader, id)
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), requestIDKey{}, id)))
+	})
+}
+
+func requestIDFrom(w http.ResponseWriter) string { return w.Header().Get(requestIDHeader) }
+
+func newRequestID() string {
+	var raw [16]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return fmt.Sprintf("req-%d", time.Now().UnixNano())
+	}
+	return hex.EncodeToString(raw[:])
+}
+
+type loggingWriter struct {
+	http.ResponseWriter
+	status int
+	bytes  int
+}
+
+func (w *loggingWriter) WriteHeader(status int) {
+	if w.status != 0 {
+		return
+	}
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *loggingWriter) Write(body []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+	n, err := w.ResponseWriter.Write(body)
+	w.bytes += n
+	return n, err
+}
+
+func requestLogging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		started := time.Now()
+		lw := &loggingWriter{ResponseWriter: w}
+		next.ServeHTTP(lw, r)
+		status := lw.status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		log.Printf(`{"request_id":%q,"method":%q,"path":%q,"status":%d,"bytes":%d,"duration_ms":%d}`,
+			r.Header.Get(requestIDHeader), r.Method, r.URL.Path, status, lw.bytes, time.Since(started).Milliseconds())
+	})
 }
