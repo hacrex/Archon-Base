@@ -88,16 +88,16 @@
 
 ## 4. Qdrant DatabaseInstance adapter
 
-- [ ] Define the engine adapter interface.
-- [ ] Implement the Qdrant health client.
-- [ ] Implement deterministic project/resource namespace derivation.
-- [ ] Create the local collection/namespace during reconciliation.
-- [ ] Make reconciliation idempotent.
-- [ ] Record `Pending`, `Ready`, `Degraded`, and `Failed` conditions.
+- [x] Define the engine adapter interface.
+- [x] Implement the Qdrant health client.
+- [x] Implement deterministic project/resource namespace derivation.
+- [x] Create the local collection/namespace during provisioning.
+- [x] Make collection creation idempotent through Qdrant PUT semantics.
+- [x] Record `Pending`, `Ready`, `Degraded`, and `Failed` conditions.
 - [ ] Add bounded retries and exponential backoff.
 - [ ] Add query/upsert/delete binding operations.
 - [ ] Add Qdrant adapter conformance tests.
-- [ ] Keep unsupported engines rejected in Phase 1 with typed errors.
+- [x] Keep unsupported engines rejected in Phase 1 with typed errors.
 
 ## 5. Python agent runtime
 

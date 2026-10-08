@@ -32,10 +32,10 @@ A user can create an account or sign in, create an organization and project, con
 
 - [ ] Define the control-plane boundary versus the Kubernetes/data-plane boundary.
 - [ ] Define which resources are owned by Archon Base and which are adapter-backed.
-- [ ] Define the organization, project, environment, cluster, and resource hierarchy.
+- [x] Define the organization, project, environment, cluster, and resource hierarchy.
 - [ ] Define the difference between desired state, observed state, and provider state.
 - [ ] Define product capability statuses: `available`, `preview`, `planned`, `unsupported`, `degraded`.
-- [ ] Define the initial single-organization local mode without pretending it is multi-tenant production.
+- [x] Define the initial single-organization local mode without pretending it is multi-tenant production.
 - [ ] Define which features are available in local, single-node, team, and production deployment profiles.
 
 ### 0.2 Stable contracts
@@ -296,7 +296,7 @@ A user can create an account or sign in, create an organization and project, con
 ### 6.3 Data and knowledge
 
 - [ ] Add supported vector engine catalog.
-- [ ] Add Qdrant provisioning and health integration.
+- [x] Add Qdrant provisioning and health integration for the local Early Access slice.
 - [ ] Add pgvector option where supported.
 - [ ] Add object-storage resource and bucket policy model.
 - [ ] Add dataset/artifact metadata and retention.

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	archondb "github.com/hacrex/Archon-Base/internal/db"
+	"github.com/hacrex/Archon-Base/internal/provision"
 	"github.com/hacrex/Archon-Base/internal/server"
 	"github.com/hacrex/Archon-Base/internal/store"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -45,7 +46,17 @@ func main() {
 		if err != nil {
 			log.Fatalf("configure repository: %v", err)
 		}
-		srv = server.New(repository)
+		if qdrantURL := os.Getenv("ARCHON_QDRANT_URL"); qdrantURL != "" {
+			qdrant, err := provision.NewQdrant(qdrantURL)
+			if err != nil {
+				log.Fatalf("configure qdrant provisioner: %v", err)
+			}
+			srv = server.NewWithProvisioner(repository, qdrant)
+			log.Printf("qdrant provisioning enabled through %s", qdrantURL)
+		} else {
+			srv = server.New(repository)
+			log.Printf("ARCHON_QDRANT_URL is not set; database provisioning remains pending")
+		}
 		log.Printf("postgres connected; migrations applied from %s", migrationsDir)
 	} else {
 		log.Printf("ARCHON_DB_URL is not set; resource routes remain unavailable")

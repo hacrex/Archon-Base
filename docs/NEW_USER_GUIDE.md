@@ -22,6 +22,8 @@ The repository is currently a **foundation and preview**, not a finished Supabas
 | PostgreSQL API wiring | Implemented when `ARCHON_DB_URL` is supplied |
 | Migration runner | Implemented with `schema_migrations` version tracking |
 | HTTP CRUD handlers | Implemented for Projects and DatabaseInstances |
+| Qdrant provisioning | Implemented when `ARCHON_QDRANT_URL` is configured; creates one deterministic collection per DatabaseInstance |
+| User/membership foundation | PostgreSQL schema and validation foundation implemented; authentication is still required before member mutations |
 | Migration SQL | Initial tables exist |
 | K3s student installer | Implemented with prerequisite checks and dry run |
 | Local resource monitor | Implemented with JSON, health, and Prometheus endpoints |
@@ -129,6 +131,7 @@ Do not start with every AI platform feature. A working Project → DatabaseInsta
 | Question | Start here |
 |---|---|
 | What is the product vision? | `docs/technical-design-document.md` |
+| How is the product connected? | `docs/ARCHITECTURE.md` |
 | What is the durable v1 resource contract? | `docs/core-v1-resource-schema.md` |
 | How should local Phase 1 work? | `docs/phase-1-local-execution-spec.md` |
 | What does the product UI look like? | `control-plane-web/README.md` |

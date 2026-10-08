@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/hacrex/Archon-Base/internal/api"
+	"github.com/hacrex/Archon-Base/internal/provision"
 	"github.com/hacrex/Archon-Base/internal/store"
 )
 
@@ -40,9 +41,14 @@ type readinessChecker interface {
 	Ready(context.Context) error
 }
 
+type statusStore interface {
+	UpdateDatabaseInstanceStatus(context.Context, string, string, string, int64) error
+}
+
 type Server struct {
-	mux   *http.ServeMux
-	store ResourceStore
+	mux         *http.ServeMux
+	store       ResourceStore
+	provisioner *provision.Qdrant
 }
 
 // New creates an HTTP server. A nil store keeps health and version endpoints
@@ -53,6 +59,13 @@ func New(repositories ...ResourceStore) *Server {
 		repository = repositories[0]
 	}
 	s := &Server{mux: http.NewServeMux(), store: repository}
+	s.routes()
+	return s
+}
+
+// NewWithProvisioner creates an API server with the optional Qdrant adapter.
+func NewWithProvisioner(repository ResourceStore, qdrant *provision.Qdrant) *Server {
+	s := &Server{mux: http.NewServeMux(), store: repository, provisioner: qdrant}
 	s.routes()
 	return s
 }
@@ -219,6 +232,20 @@ func (s *Server) databaseCollection(w http.ResponseWriter, r *http.Request, proj
 		if err := s.store.CreateDatabaseInstance(r.Context(), &instance); err != nil {
 			s.writeStoreError(w, err)
 			return
+		}
+		if s.provisioner != nil {
+			phase, message := "Ready", "Qdrant collection is ready"
+			if err := s.provisioner.Ensure(r.Context(), &instance); err != nil {
+				phase, message = "Degraded", err.Error()
+			}
+			if statuses, ok := s.store.(statusStore); ok {
+				if err := statuses.UpdateDatabaseInstanceStatus(r.Context(), instance.Metadata.UID, phase, message, instance.Metadata.Generation); err != nil {
+					writeError(w, http.StatusInternalServerError, "status_update_failed", "database instance was created but its status could not be updated")
+					return
+				}
+			}
+			instance.Status.Phase, instance.Status.Message = phase, message
+			instance.Status.ObservedGeneration = instance.Metadata.Generation
 		}
 		w.Header().Set("Location", fmt.Sprintf("/v1/projects/%s/databases/%s", projectName, instance.Metadata.Name))
 		writeJSON(w, http.StatusAccepted, instance)
