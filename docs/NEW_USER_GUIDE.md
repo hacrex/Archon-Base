@@ -30,6 +30,7 @@ The repository is currently a **foundation and preview**, not a finished Supabas
 | Web control-plane shell | Implemented as a local preview |
 | Authentication | Login/logout repository and bearer middleware implemented |
 | Authorization/RBAC | Role hierarchy and organization membership lookup implemented; project policy checks remain |
+| First-user bootstrap | Implemented through `archon bootstrap-user`; duplicate emails are refused |
 | Persistent web console | Not implemented; current UI uses local preview data |
 | CLI workflows | Not implemented; most commands are stubs |
 | Kubernetes reconciliation | Not implemented |
@@ -72,6 +73,19 @@ go build ./...
 ```bash
 make run
 ```
+
+Before logging in for the first time, create the local owner account from a shell with access to PostgreSQL:
+
+```bash
+export ARCHON_DB_URL='postgres://archon:archon@127.0.0.1:5432/archon?sslmode=disable'
+printf '%s\n' 'replace-with-a-strong-local-password' | \
+  go run ./cmd/archon bootstrap-user \
+    --email owner@example.com \
+    --display-name 'Local Owner' \
+    --password-stdin
+```
+
+The command applies pending migrations, creates an active user, stores a bcrypt password hash, assigns the `owner` role in the configured organization, and refuses to overwrite an existing email. Use `ARCHON_ORGANIZATION_ID` to select a different organization UUID.
 
 Then check:
 

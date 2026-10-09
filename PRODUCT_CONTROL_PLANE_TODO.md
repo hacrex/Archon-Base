@@ -127,6 +127,7 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 2.2 First-run onboarding
 
+- [x] Add a local first-user bootstrap command that creates an active owner membership.
 - [ ] Create first organization flow.
 - [ ] Create first project flow.
 - [ ] Choose deployment profile: Local, Enthusiast/K3s, Single Node, Team, or Production.
