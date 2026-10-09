@@ -139,6 +139,7 @@ Do not start with every AI platform feature. A working Project → DatabaseInsta
 | How do I understand the code? | `internal/api`, `internal/server`, `internal/store` |
 | How do I install student K3s? | `docs/student-k3s-setup.md` |
 | How do I check local resources? | `cmd/archon-monitor` and `internal/monitor` |
+| What is the authentication boundary? | `docs/authentication-authorization-foundation.md` |
 
 ## Important vocabulary
 

@@ -132,6 +132,7 @@ See [Self-hosting Requirements](docs/self-hosting-requirements.md) for the stude
 
 - [Technical Design Document](docs/technical-design-document.md): architecture, engine comparison, security, deployment, roadmap.
 - [Architecture Diagram](docs/ARCHITECTURE.md): control plane, data plane, provisioning flow, identity foundation, and security boundaries.
+- [Authentication Foundation](docs/authentication-authorization-foundation.md): password, session, role, and authorization primitives.
 - [Core v1 Resource Schema](docs/core-v1-resource-schema.md): the shared Project and DatabaseInstance contract.
 - [Phase 1 Local Execution Specification](docs/phase-1-local-execution-spec.md): the local vertical slice without Kubernetes.
 - [Self-hosting Requirements](docs/self-hosting-requirements.md): enthusiast/K3s practice profile and larger deployment starting points.

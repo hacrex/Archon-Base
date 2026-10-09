@@ -182,7 +182,7 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 4.1 Admin access model
 
-- [ ] Define organization owner, admin, operator, developer, viewer, and billing/audit roles.
+- [x] Define organization owner, admin, operator, developer, viewer, and billing/audit roles.
 - [ ] Define platform administrator separately from organization administrator.
 - [ ] Require explicit authorization for platform-wide actions.
 - [ ] Add privileged-action confirmation and reason capture.
