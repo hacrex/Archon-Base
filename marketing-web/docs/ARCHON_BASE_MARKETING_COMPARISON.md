@@ -3,9 +3,8 @@
 > **Purpose:** Marketing and positioning reference for the Archon Base
 > website.
 >
-> **Primary positioning:** Archon Base is an open-source AI
-> infrastructure control plane for self-hosted agents, models, data,
-> tools, and compute.
+> **Primary positioning:** Archon Base is an open-source self-hosted AI
+> Backend for agents, models, data, tools, and compute.
 
 ------------------------------------------------------------------------
 
@@ -13,11 +12,10 @@
 
 ### Archon Base
 
-**Archon Base is an open-source AI infrastructure control plane for
-self-hosted agents, models, data, and compute.**
+**Archon Base is an open-source self-hosted AI Backend for agents, models,
+data, tools, and compute.**
 
-It provides a unified platform for provisioning and operating the
-infrastructure behind AI applications:
+It provides a unified backend for building and operating AI applications:
 
 -   Agent runtimes
 -   Model gateways
@@ -31,9 +29,11 @@ infrastructure behind AI applications:
 -   Observability, evaluations, usage, and governance
 -   Kubernetes-native deployment and lifecycle management
 
-The goal is not to replace every AI application framework.
+The goal is not to replace every AI application framework or generic
+application backend.
 
-The goal is to provide the **infrastructure layer underneath them**.
+The goal is to provide the AI-specific backend services they need, with
+self-hosting, portability, and developer control built in.
 
 ------------------------------------------------------------------------
 
@@ -58,10 +58,10 @@ The AI developer stack is increasingly divided into several layers.
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
-│              AI INFRASTRUCTURE CONTROL PLANE               │
+│                    SELF-HOSTED AI BACKEND                  │
 │                         ARCHON BASE                         │
-│ Agents • Models • GPU • Vector DB • Storage • Tools        │
-│ IAM • Policy • Secrets • RAG • Evals • Observability        │
+│ Auth • Projects • Vectors • Storage • Functions • Models   │
+│ Tools • RAG • Policies • Evals • Observability              │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
@@ -70,10 +70,10 @@ The AI developer stack is increasingly divided into several layers.
 └─────────────────────────────────────────────────────────────┘
 ```
 
-This layered positioning is important.
+This product positioning is important.
 
 Archon Base should not primarily market itself as another chat UI,
-visual AI builder, or generic backend-as-a-service platform.
+visual AI builder, or generic non-AI backend-as-a-service platform.
 
 ------------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ Appwrite
 Build and deploy applications.
 
 Archon Base
-Run the AI infrastructure behind applications.
+Build and operate AI backends for applications and agents.
 ```
 
 ### Architectural difference
@@ -235,8 +235,8 @@ Run the AI infrastructure behind applications.
 
 ### Marketing message
 
-> **Appwrite is a backend for applications. Archon Base is
-> infrastructure for AI applications.**
+> **Appwrite is a general backend for applications. Archon Base is an
+> AI Backend for applications and agents.**
 
 ------------------------------------------------------------------------
 
@@ -340,8 +340,8 @@ GPU • Storage • Sandboxes • Governance
 
 ### Marketing message
 
-> **Open WebUI is where users interact with AI. Archon Base is where the
-> infrastructure behind that AI runs.**
+> **Open WebUI is where users interact with AI. Archon Base provides the
+> backend services that power AI agents, data, tools, and workflows.**
 
 Archon Base can therefore be positioned as infrastructure that Open
 WebUI and similar interfaces can consume.
@@ -403,7 +403,7 @@ Archon Base
 ### Marketing message
 
 > **Dify helps you build AI applications. Archon Base provides the
-> infrastructure those applications can run on.**
+> self-hosted backend services those applications connect to.**
 
 ------------------------------------------------------------------------
 
@@ -441,7 +441,7 @@ Archon Base can provide:
 ### Marketing message
 
 > **Langflow helps you compose AI workflows. Archon Base provides the
-> infrastructure that executes and operates them.**
+> backend resources and functions those workflows use.**
 
 ------------------------------------------------------------------------
 
@@ -456,8 +456,8 @@ That creates an unnecessarily broad competitive claim.
 
 Instead:
 
-> **Archon Base is the infrastructure layer for self-hosted AI
-> applications.**
+> **Archon Base is the self-hosted AI Backend for applications and
+> agents.**
 
 And:
 

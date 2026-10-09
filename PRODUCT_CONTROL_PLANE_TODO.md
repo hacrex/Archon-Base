@@ -1,12 +1,12 @@
 # Archon Base Product Control Plane TODO
 
-**Purpose:** Build a self-hosted AI infrastructure control plane with the usability of products such as Supabase and Appwrite while keeping Archon Base focused on the infrastructure underneath AI applications.
+**Purpose:** Build a self-hosted AI Backend with the usability of products such as Supabase and Appwrite, focused on the backend services AI applications and agents need: vectors, storage, functions, models, tools, knowledge, and governance.
 
 **Product rule:** Do not present planned or preview capabilities as available. Every feature should be labeled **Available**, **Preview**, or **Planned** in the UI, API documentation, and marketing content.
 
 **Primary positioning:**
 
-> Archon Base gives teams one control plane to provision, operate, secure, and observe self-hosted AI infrastructure.
+> Archon Base gives developers one backend to build, connect, secure, and operate AI workloads with vectors, storage, functions, models, tools, and knowledge services.
 
 ## Current baseline
 
@@ -15,14 +15,14 @@
 - [x] Project and DatabaseInstance CRUD API handlers.
 - [x] Student K3s installation script.
 - [x] Local resource monitoring daemon.
-- [ ] Authentication and authorization.
+- [x] Authentication foundation and organization membership lookup; complete project authorization remains.
 - [ ] Persistent web console; the current modular console remains a local preview.
 - [ ] Production-ready controllers and reconciliation.
-- [ ] Agent, model, storage, tool, and governance services.
+- [ ] Agent, model, storage, tool, knowledge, and governance backend services.
 
 ## Definition of product-control-plane done
 
-A user can create an account or sign in, create an organization and project, connect a self-hosted cluster, provision supported resources, inspect health and usage, manage team access, review audit events, and safely delete resources from a responsive web console. Every action is backed by an authenticated API, produces an auditable event, and clearly communicates whether the capability is available, preview, or planned.
+A user can create an account or sign in, create an organization and project, create AI backend resources, connect models and tools, deploy functions, inspect health and usage, manage team access, review audit events, and safely delete resources from a responsive web console. Every action is backed by an authenticated API, produces an auditable event, and clearly communicates whether the capability is available, preview, or planned.
 
 ---
 

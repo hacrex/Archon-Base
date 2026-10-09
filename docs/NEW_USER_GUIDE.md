@@ -2,17 +2,17 @@
 
 ## What is Archon Base?
 
-Archon Base is intended to be the **control plane for self-hosted AI infrastructure**. It should eventually help you operate projects, vector databases, models, agents, storage, tools, security policies, and Kubernetes workloads from one place.
+Archon Base is intended to be the **self-hosted AI Backend for agent workloads**. It should help you build and operate a complete AI backend—projects, vector databases, storage, model connections, agent functions, tools, knowledge workflows, and security policies—from one place.
 
 The important distinction is:
 
 - **Supabase/Appwrite** mainly help you build application backends.
 - **Dify/Langflow/Open WebUI** mainly help you build or use AI applications.
-- **Archon Base** is intended to operate the infrastructure underneath those applications.
+- **Archon Base** is intended to provide the backend services those AI applications need, with self-hosting as a core deployment choice.
 
 ## What exists today?
 
-The repository is currently a **foundation and preview**, not a finished Supabase/Appwrite-style product.
+The repository is currently a **foundation and preview**, not a finished Supabase/Appwrite-style AI Backend.
 
 | Area | Current state |
 |---|---|
@@ -43,17 +43,17 @@ The repository is currently a **foundation and preview**, not a finished Supabas
 Think of the product as four layers:
 
 ```text
-1. Web console / CLI
-   The interface a person uses.
+1. AI Backend experience
+   Dashboard, CLI, SDK, and API used to build an agent backend.
 
-2. Control-plane API
-   Validates desired resources and records their state.
+2. Backend services API
+   Authenticates users and exposes vectors, storage, functions, models, tools, and knowledge resources.
 
-3. Control-plane database
-   Stores Projects, DatabaseInstances, status, and outbox events.
+3. Platform control plane
+   Stores Projects, resources, status, memberships, and outbox events.
 
-4. Data plane
-   Kubernetes/K3s, Qdrant, model servers, storage, and runtimes.
+4. Managed/self-hosted data plane
+   Qdrant/Chroma, object storage, model servers, function runtimes, and tools.
 ```
 
 Only the first three layers have partial foundations today. The data-plane controllers that turn a desired DatabaseInstance into a running Qdrant resource are still planned.

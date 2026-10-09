@@ -2,25 +2,25 @@
 
 **Architecture status:** Early Access foundation  
 **Current release boundary:** local control plane, PostgreSQL resource state, optional Qdrant provisioning, student/K3s tooling, and identity foundation  
-**Not yet production-ready:** authentication, authorization, Kubernetes controllers, agent isolation, multi-tenancy, and high availability
+**Not yet production-ready:** complete project authorization, Kubernetes controllers, agent isolation, multi-tenancy, and high availability
 
 ## 1. Product architecture at a glance
 
-Archon Base is designed as a control plane for self-hosted AI infrastructure. The control plane stores desired resources and coordinates provisioning; the data plane runs the actual databases, model servers, agents, and workloads.
+Archon Base is designed as a self-hosted AI Backend. Developers use its API, dashboard, CLI, and SDKs to create the backend resources their agents need—vectors, storage, functions, models, tools, and knowledge workflows. Internally, the platform uses a control plane to store desired state and coordinate provisioning; the data plane runs the actual services.
 
 ```mermaid
 flowchart LR
-    User[Developer / Operator]
-    CLI[Archon CLI\nplanned workflows]
-    Web[Control Plane Web UI\nlocal preview]
-    API[Archon API\nGo HTTP server]
+    User[AI Backend Developer]
+    CLI[Archon CLI\nbackend workflows]
+    Web[AI Backend Dashboard\nlocal preview]
+    API[Archon Backend API\nGo HTTP server]
     PG[(PostgreSQL\nresource state + migrations)]
     Outbox[(Transactional Outbox\nresource events)]
     QP[Qdrant Provisioner\nHTTP adapter]
     Q[(Qdrant\nvector data plane)]
     Monitor[Archon Monitor\nlocal host metrics]
     K3s[K3s / Kubernetes\nfuture data plane]
-    Agent[Agent Runtime\ntrusted local mode planned]
+    Agent[Agent Functions\ntrusted local mode planned]
     Models[Model Gateway\nplanned]
     Storage[Object Storage\nplanned]
 
@@ -43,7 +43,7 @@ flowchart LR
 
 ### Current implementation boundary
 
-The solid path is the current Early Access foundation:
+The solid path is the current Early Access AI Backend foundation:
 
 ```text
 HTTP client/API request
@@ -229,9 +229,9 @@ erDiagram
 
 ### Identity status
 
-The identity migration creates `users` and `organization_memberships` with owner/admin/operator/developer/viewer roles. It is a storage foundation only.
+The identity migrations create `users`, `organization_memberships`, credentials, and revocable sessions with owner/admin/operator/developer/viewer roles. Login, logout, bearer authentication, and organization membership lookup are implemented; project-level authorization and member-management mutations remain.
 
-Authentication and authorization must be implemented before member-management mutations or project-scoped access are exposed. The current single-organization local mode is not multi-tenant production security.
+Project authorization must be implemented before trusting role checks for multi-project use. The current single-organization local mode is not multi-tenant production security.
 
 ## 5. Security boundaries
 
@@ -245,7 +245,7 @@ flowchart LR
 
     subgraph Control[Control-plane boundary]
         API[API validation + request limits]
-        Auth[Authentication / authorization\nplanned]
+        Auth[Authentication\nimplemented; project policy planned]
         Store[PostgreSQL repository]
         Audit[Audit stream\nplanned]
     end
@@ -279,7 +279,7 @@ Current security rules:
 - Request bodies are size-limited.
 - Request IDs and structured access logs are available.
 - Secrets and prompt redaction still need to be completed throughout all future runtimes.
-- User/membership data exists, but authentication and authorization are not complete.
+- User/membership data, login/logout, bearer authentication, and organization membership lookup exist; project authorization is not complete.
 - Do not expose trusted local agent execution to untrusted users.
 
 ## 6. Repository-to-architecture map
@@ -292,7 +292,7 @@ Current security rules:
 | PostgreSQL repository | `internal/store/` | Project/DatabaseInstance persistence and status updates |
 | Migration runner | `internal/db/` | Ordered, idempotent forward migration runner |
 | Core schema | `migrations/001_core_resources.sql` | Projects, DatabaseInstances, outbox |
-| Identity schema | `migrations/002_identity_foundation.sql` | Users and organization memberships; auth gate remains |
+| Identity schema | `migrations/002_identity_foundation.sql`, `003_auth_sessions.sql` | Users, memberships, credentials, and sessions |
 | Qdrant adapter | `internal/provision/qdrant.go` | Health, deterministic collection provisioning, deletion |
 | Local monitor | `cmd/archon-monitor/`, `internal/monitor/` | Host resource status and Prometheus metrics |
 | Web console | `control-plane-web/` | Modular local preview; real API integration remains next |

@@ -1,20 +1,20 @@
 # Archon Base
 
-**The self-hosted backend for AI agents.** Vectors, functions, and storage on your own infrastructure.
+**The self-hosted AI Backend.** Build agent backends with vectors, storage, functions, models, and tools on infrastructure you control.
 
-Archon Base is an open-source platform that does for AI workloads what Appwrite and Supabase do for classic apps. One install gives you managed vector databases, serverless agent functions, and S3-compatible storage for models and datasets, behind one API, one CLI, and one auth model.
+Archon Base is an open-source backend platform for AI workloads. It brings the developer experience of Appwrite and Supabase to agent backends: one install, one API, one CLI, one dashboard, and one auth model for vector databases, storage, agent functions, model connections, tools, and knowledge workflows.
 
-> Status: foundation and preview stage. The Project/DatabaseInstance API foundations, PostgreSQL startup wiring, migration runner, student K3s tooling, and local dashboard preview exist; authentication, reconciliation, and most platform features are not implemented yet. Start with the [New User Guide](docs/NEW_USER_GUIDE.md).
+> Status: foundation and preview stage. Project/DatabaseInstance APIs, PostgreSQL persistence, Qdrant provisioning, authentication, first-user bootstrap, student K3s tooling, and a local dashboard preview exist. Storage, model connections, agent functions, tools, and knowledge workflows remain in development. Start with the [New User Guide](docs/NEW_USER_GUIDE.md).
 
 ## Why Archon Base
 
-| Need | Typical answer today | Archon Base |
+| AI backend need | Typical answer today | Archon Base |
 |---|---|---|
 | Vector database | Run Qdrant, Weaviate or Milvus yourself | Provisioned declaratively, with backups and upgrades |
 | Agent runtime | Sandbox service or DIY containers | Sandboxed functions with bindings to your own data |
 | Model and file storage | Separate S3 setup | Built in, with a model registry and events |
 | Glue (auth, secrets, tracing) | Written per project | One control plane |
-| Lock-in | Hyperscaler services | Runs anywhere Kubernetes runs |
+| Developer experience | Assemble several services and SDKs | One AI Backend API, CLI, dashboard, and auth model |
 
 ## Core components
 
@@ -22,7 +22,7 @@ Archon Base is an open-source platform that does for AI workloads what Appwrite 
 - **Agent Functions**: serverless agents on gVisor by default, Firecracker or Kata microVMs for untrusted code.
 - **Storage**: S3-compatible object storage (SeaweedFS by default) with a model registry and dataset versioning.
 - **Model Gateway**: OpenAI-compatible endpoint in front of vLLM, Ollama and optional external providers.
-- **Planned**: knowledge (RAG) pipelines, tracing and evals, guardrails and approvals, MCP hosting, budgets.
+- **Planned**: knowledge (RAG) pipelines, tracing and evals, guardrails and approvals, MCP hosting, budgets, and richer model integrations.
 
 ## Repository layout
 

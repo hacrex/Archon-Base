@@ -6,11 +6,11 @@
 
 ## 1. Reality-based goal
 
-Archon Base should not attempt to become the complete Supabase/Appwrite equivalent before November. That would require authentication, multi-tenant authorization, multiple production controllers, storage, model routing, agent isolation, audit, upgrades, and operational hardening.
+Archon Base should not attempt to become the complete AI Backend equivalent of Supabase/Appwrite before November. That would require complete authentication, multi-tenant authorization, storage, model routing, agent isolation, audit, upgrades, and operational hardening.
 
 The achievable October goal is a **small but real control plane**:
 
-> A developer can start Archon Base locally, create a Project, create a Qdrant DatabaseInstance, see real resource status in the dashboard, and run a trusted local support-agent example.
+> A developer can start Archon Base locally, bootstrap an account, create an AI project, provision a Qdrant vector backend, see real resource status in the dashboard, and run a trusted local support-agent example.
 
 This is a credible Early Access product because the core workflow is real rather than a collection of disconnected preview screens.
 
@@ -18,16 +18,17 @@ This is a credible Early Access product because the core workflow is real rather
 
 ### What users can do
 
-1. Start the local stack with one command.
-2. Check prerequisites and receive actionable errors.
-3. Create and list Projects.
-4. Create, list, inspect, update, and delete DatabaseInstances.
-5. Provision one local Qdrant collection from a DatabaseInstance.
-6. See Pending, Ready, Degraded, and Failed status.
-7. Open the dashboard and see real API-backed data.
-8. Run the example trusted local Python agent.
-9. Query the managed vector binding from the example agent.
-10. Stop the local stack safely.
+1. Start the local AI Backend stack with one command.
+2. Bootstrap an owner account and sign in.
+3. Check prerequisites and receive actionable errors.
+4. Create and list AI projects.
+5. Create, list, inspect, update, and delete vector backends.
+6. Provision one local Qdrant collection from a vector backend resource.
+7. See Pending, Ready, Degraded, and Failed status.
+8. Open the dashboard and see real API-backed data.
+9. Run the example trusted local Python agent.
+10. Query the managed vector binding from the example agent.
+11. Stop the local stack safely.
 
 ### What the MVP does not promise
 
