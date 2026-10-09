@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/hacrex/Archon-Base/internal/api"
+	"github.com/hacrex/Archon-Base/internal/auth"
 	"github.com/hacrex/Archon-Base/internal/provision"
 	"github.com/hacrex/Archon-Base/internal/store"
 )
@@ -45,10 +46,15 @@ type statusStore interface {
 	UpdateDatabaseInstanceStatus(context.Context, string, string, string, int64) error
 }
 
+type authenticationStore interface {
+	store.AuthRepository
+}
+
 type Server struct {
 	mux         *http.ServeMux
 	store       ResourceStore
 	provisioner *provision.Qdrant
+	auth        authenticationStore
 }
 
 // New creates an HTTP server. A nil store keeps health and version endpoints
@@ -59,6 +65,9 @@ func New(repositories ...ResourceStore) *Server {
 		repository = repositories[0]
 	}
 	s := &Server{mux: http.NewServeMux(), store: repository}
+	if authStore, ok := repository.(authenticationStore); ok {
+		s.auth = authStore
+	}
 	s.routes()
 	return s
 }
@@ -66,13 +75,16 @@ func New(repositories ...ResourceStore) *Server {
 // NewWithProvisioner creates an API server with the optional Qdrant adapter.
 func NewWithProvisioner(repository ResourceStore, qdrant *provision.Qdrant) *Server {
 	s := &Server{mux: http.NewServeMux(), store: repository, provisioner: qdrant}
+	if authStore, ok := repository.(authenticationStore); ok {
+		s.auth = authStore
+	}
 	s.routes()
 	return s
 }
 
 // Handler returns the server with request ID and structured access-log middleware.
 func (s *Server) Handler() http.Handler {
-	return requestLogging(withRequestID(s.mux))
+	return requestLogging(withRequestID(s.authenticate(s.mux)))
 }
 
 func (s *Server) routes() {
@@ -80,8 +92,121 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/livez", s.livez)
 	s.mux.HandleFunc("/readyz", s.readyz)
 	s.mux.HandleFunc("/v1/version", s.version)
+	s.mux.HandleFunc("/v1/auth/login", s.login)
+	s.mux.HandleFunc("/v1/auth/logout", s.logout)
+	s.mux.HandleFunc("/v1/auth/me", s.me)
 	s.mux.HandleFunc("/v1/projects", s.projects)
 	s.mux.HandleFunc("/v1/projects/", s.projectRoutes)
+}
+
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type loginResponse struct {
+	Token        string    `json:"token"`
+	ExpiresAt    time.Time `json:"expiresAt"`
+	UserID       string    `json:"userId"`
+	Email        string    `json:"email"`
+	Organization string    `json:"organizationId"`
+	Role         auth.Role `json:"role"`
+}
+
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w, http.MethodPost)
+		return
+	}
+	if s.auth == nil {
+		serviceUnavailable(w)
+		return
+	}
+	var request loginRequest
+	if err := decodeJSON(r, &request); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
+	principal, session, token, err := s.auth.Login(r.Context(), request.Email, request.Password, 24*time.Hour)
+	if err != nil {
+		if errors.Is(err, auth.ErrInvalidCredentials) {
+			writeError(w, http.StatusUnauthorized, "invalid_credentials", "email or password is invalid")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "internal_error", "login failed")
+		return
+	}
+	writeJSON(w, http.StatusOK, loginResponse{Token: token, ExpiresAt: session.ExpiresAt, UserID: principal.UserID, Email: principal.Email, Organization: principal.Organization, Role: principal.Role})
+}
+
+func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w, http.MethodPost)
+		return
+	}
+	token, ok := bearerToken(r)
+	if !ok || s.auth == nil {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "a bearer token is required")
+		return
+	}
+	if err := s.auth.RevokeSession(r.Context(), token); err != nil && !errors.Is(err, auth.ErrInvalidCredentials) {
+		writeError(w, http.StatusInternalServerError, "internal_error", "logout failed")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "signed_out"})
+}
+
+func (s *Server) me(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		methodNotAllowed(w, http.MethodGet)
+		return
+	}
+	principal, ok := principalFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "a valid bearer token is required")
+		return
+	}
+	writeJSON(w, http.StatusOK, principal)
+}
+
+type principalContextKey struct{}
+
+func principalFromContext(ctx context.Context) (auth.Principal, bool) {
+	principal, ok := ctx.Value(principalContextKey{}).(auth.Principal)
+	return principal, ok
+}
+
+func bearerToken(r *http.Request) (string, bool) {
+	parts := strings.Fields(strings.TrimSpace(r.Header.Get("Authorization")))
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") || parts[1] == "" {
+		return "", false
+	}
+	return parts[1], true
+}
+
+func (s *Server) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.auth == nil || r.URL.Path == "/healthz" || r.URL.Path == "/livez" || r.URL.Path == "/readyz" || r.URL.Path == "/v1/version" || r.URL.Path == "/v1/auth/login" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		token, ok := bearerToken(r)
+		if !ok {
+			writeError(w, http.StatusUnauthorized, "unauthorized", "a bearer token is required")
+			return
+		}
+		principal, _, err := s.auth.LookupSession(r.Context(), token)
+		if err != nil {
+			if errors.Is(err, auth.ErrSessionExpired) || errors.Is(err, auth.ErrSessionRevoked) || errors.Is(err, auth.ErrInvalidCredentials) {
+				writeError(w, http.StatusUnauthorized, "unauthorized", "the bearer token is invalid or expired")
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "internal_error", "authentication lookup failed")
+			return
+		}
+		ctx := context.WithValue(r.Context(), principalContextKey{}, principal)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func (s *Server) livez(w http.ResponseWriter, _ *http.Request) {

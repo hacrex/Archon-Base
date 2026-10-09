@@ -113,12 +113,12 @@ A user can create an account or sign in, create an organization and project, con
 
 ### 2.1 Authentication
 
-- [ ] Add local development authentication that is clearly labeled development-only.
-- [ ] Add email/password authentication only if it can be secured and operated responsibly.
+- [x] Add local development authentication that is clearly labeled development-only.
+- [x] Add email/password authentication foundation with bcrypt credentials and bearer sessions; production hardening remains.
 - [ ] Add OIDC/OAuth provider support.
 - [ ] Add optional passkeys/WebAuthn.
 - [ ] Add MFA enrollment and recovery flows.
-- [ ] Add session revocation and device/session management.
+- [x] Add server-side session revocation; device/session management UI remains.
 - [ ] Add secure cookie settings for HTTPS embedded previews and production deployments.
 - [ ] Add CSRF protection where cookie authentication is used.
 - [ ] Add login rate limiting and abuse protection.
@@ -193,7 +193,7 @@ A user can create an account or sign in, create an organization and project, con
 
 - [ ] Manage organization profile and defaults.
 - [ ] Invite, suspend, remove, and restore members.
-- [ ] Assign roles and project-level permissions.
+- [x] Assign organization roles and resolve the authenticated organization membership; project-level permissions remain.
 - [ ] View pending invitations and expiration.
 - [ ] Configure allowed identity providers.
 - [ ] Configure organization API keys and service accounts.

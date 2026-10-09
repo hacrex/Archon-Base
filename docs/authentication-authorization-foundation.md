@@ -16,19 +16,20 @@ Archon Base now has the first security primitives for user and organization mana
   - `viewer`
 - Role hierarchy checks for future authorization middleware.
 - PostgreSQL credential and session tables through migration `003_auth_sessions.sql`.
+- PostgreSQL authentication repository methods for credential verification, session lookup, and revocation.
+- `POST /v1/auth/login` and `POST /v1/auth/logout`.
+- `GET /v1/auth/me` for the authenticated principal and organization membership.
+- Bearer-token middleware protecting project and database resource routes.
 
 ## Security boundary
 
 The plaintext session token is returned only when a session is created. The database stores only the token hash. Password plaintext is never persisted.
 
-This milestone does **not** yet expose login, logout, member invitations, or privileged API mutations. Those endpoints must be connected to the primitives only after request authentication and project/organization authorization middleware are implemented.
+Login, logout, current-principal lookup, and bearer authentication are now implemented. Member invitations, role mutations, and full project-scoped authorization are still intentionally deferred until their audit and policy contracts are complete.
 
 ## Next integration steps
 
-1. Add an authentication store for user lookup, credential verification, and session lifecycle.
-2. Add `POST /v1/auth/login` and `POST /v1/auth/logout`.
-3. Add authenticated principal middleware from `Authorization: Bearer` tokens.
-4. Add organization membership lookup and project authorization checks.
-5. Add authenticated Admin Panel member invitation and role management.
-6. Add session listing, revocation, rate limits, and audit events.
-7. Add CSRF protection if browser cookies are introduced.
+1. Add project authorization checks using the authenticated organization membership.
+2. Add authenticated Admin Panel member invitation and role management.
+3. Add session listing, revocation UI, rate limits, and audit events.
+4. Add CSRF protection if browser cookies are introduced.

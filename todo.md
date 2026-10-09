@@ -133,8 +133,8 @@
 
 ## 7. Security baseline before public use
 
-- [ ] Add authentication to the API; password/session primitives and migrations are implemented, endpoint wiring remains.
-- [ ] Add project-scoped authorization; role hierarchy primitives are implemented, request middleware remains.
+- [x] Add authentication to the API; login/logout, bearer middleware, password/session primitives, and migrations are implemented.
+- [ ] Add project-scoped authorization; authenticated organization membership lookup is implemented, resource policy checks remain.
 - [ ] Add API key/service-account lifecycle.
 - [ ] Add input size limits and rate limits.
 - [ ] Keep PostgreSQL, Qdrant, and internal runtimes private.

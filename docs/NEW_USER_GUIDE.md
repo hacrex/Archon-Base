@@ -28,8 +28,8 @@ The repository is currently a **foundation and preview**, not a finished Supabas
 | K3s student installer | Implemented with prerequisite checks and dry run |
 | Local resource monitor | Implemented with JSON, health, and Prometheus endpoints |
 | Web control-plane shell | Implemented as a local preview |
-| Authentication | Not implemented |
-| Authorization/RBAC | Not implemented |
+| Authentication | Login/logout repository and bearer middleware implemented |
+| Authorization/RBAC | Role hierarchy and organization membership lookup implemented; project policy checks remain |
 | Persistent web console | Not implemented; current UI uses local preview data |
 | CLI workflows | Not implemented; most commands are stubs |
 | Kubernetes reconciliation | Not implemented |
@@ -80,6 +80,14 @@ curl http://127.0.0.1:8080/healthz
 curl http://127.0.0.1:8080/v1/version
 curl http://127.0.0.1:8080/livez
 curl http://127.0.0.1:8080/readyz
+
+# after creating an active user credential, log in
+curl -X POST http://127.0.0.1:8080/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"user@example.com","password":"your-password"}'
+
+# use the returned token for the current principal and resource routes
+curl http://127.0.0.1:8080/v1/auth/me -H 'Authorization: Bearer <token>'
 ```
 
 `/healthz` and `/livez` prove that the HTTP process is alive. `/readyz` also checks that the configured resource store is ready. The API binds to loopback (`127.0.0.1:8080`) by default. To enable resource CRUD, provide `ARCHON_DB_URL`; the API pings PostgreSQL, applies forward migrations from `ARCHON_MIGRATIONS_DIR` (default `migrations`), and wires the repository before serving resource routes.

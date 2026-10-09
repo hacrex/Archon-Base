@@ -50,12 +50,13 @@ make run
 curl localhost:8080/healthz
 curl localhost:8080/livez
 curl localhost:8080/readyz
+curl localhost:8080/v1/auth/me -H 'Authorization: Bearer <token>'
 
 # or run the dev stack (API, Postgres, NATS, Qdrant)
 make up
 ```
 
-The API binds to `127.0.0.1:8080` by default. Set `ARCHON_API_ADDR` explicitly when exposing it beyond the local host. `/livez` checks the process; `/readyz` also requires the configured resource store to be reachable.
+The API binds to `127.0.0.1:8080` by default. Set `ARCHON_API_ADDR` explicitly when exposing it beyond the local host. `/livez` checks the process; `/readyz` also requires the configured resource store to be reachable. With PostgreSQL configured, `POST /v1/auth/login` issues an opaque bearer token, `POST /v1/auth/logout` revokes it, and resource routes require a valid bearer token.
 
 Continuous integration runs Go tests, vet, formatting, builds, frontend syntax checks, Python checks, YAML/JSON validation, Compose validation, and Helm validation through [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
