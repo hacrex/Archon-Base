@@ -11,10 +11,26 @@ import (
 	"time"
 
 	"github.com/hacrex/Archon-Base/internal/api"
+	"github.com/hacrex/Archon-Base/internal/auth"
 )
 
 var ErrNotFound = errors.New("resource not found")
 var ErrProjectNotEmpty = errors.New("project has active database instances")
+var ErrForbidden = errors.New("project access denied")
+
+// ProjectAuthorizer is the persistence contract used by the HTTP middleware.
+// Organization owners/admins are resolved as implicit project administrators;
+// all other access comes from project_memberships.
+type ProjectAuthorizer interface {
+	AuthorizeProject(context.Context, string, string, string, auth.Role) error
+	ListProjectsForPrincipal(context.Context, string, string) ([]api.Project, error)
+}
+
+// ProjectMembershipStore grants the creator an explicit project membership
+// after a project is created. The operation is idempotent.
+type ProjectMembershipStore interface {
+	GrantProjectMembership(context.Context, string, string, string, auth.Role) error
+}
 
 type Repository struct {
 	db             *sql.DB
@@ -113,6 +129,96 @@ func (r *Repository) ListProjects(ctx context.Context) ([]api.Project, error) {
 		return nil, fmt.Errorf("iterate projects: %w", err)
 	}
 	return projects, nil
+}
+
+func (r *Repository) ListProjectsForPrincipal(ctx context.Context, userID, organizationID string) ([]api.Project, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT p.id::text, p.name, p.display_name, p.description, p.environment, p.region, p.spec, p.labels, p.annotations,
+		       p.phase, p.message, p.generation, p.observed_generation, p.created_at, p.updated_at
+		FROM projects p
+		JOIN organization_memberships om ON om.organization_id = p.organization_id AND om.user_id = $1::uuid
+		WHERE p.organization_id = $2::uuid AND p.deleted_at IS NULL
+		  AND (
+			om.role IN ('owner', 'admin')
+			OR EXISTS (SELECT 1 FROM project_memberships pm WHERE pm.project_id = p.id AND pm.user_id = $1::uuid)
+		  )
+		ORDER BY p.name`, userID, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("list authorized projects: %w", err)
+	}
+	defer rows.Close()
+	projects := []api.Project{}
+	for rows.Next() {
+		project, err := scanProject(rows)
+		if err != nil {
+			return nil, err
+		}
+		projects = append(projects, *project)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate authorized projects: %w", err)
+	}
+	return projects, nil
+}
+
+func (r *Repository) AuthorizeProject(ctx context.Context, userID, organizationID, projectName string, required auth.Role) error {
+	var allowed bool
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM projects p
+			JOIN organization_memberships om ON om.organization_id = p.organization_id AND om.user_id = $1::uuid
+			LEFT JOIN project_memberships pm ON pm.project_id = p.id AND pm.user_id = $1::uuid
+			WHERE p.organization_id = $2::uuid AND p.name = $3 AND p.deleted_at IS NULL
+			  AND (
+				CASE om.role WHEN 'viewer' THEN 1 WHEN 'developer' THEN 2 WHEN 'operator' THEN 3 WHEN 'admin' THEN 4 WHEN 'owner' THEN 5 ELSE 0 END >= $4
+				OR CASE pm.role WHEN 'viewer' THEN 1 WHEN 'developer' THEN 2 WHEN 'operator' THEN 3 WHEN 'admin' THEN 4 WHEN 'owner' THEN 5 ELSE 0 END >= $4
+			  )
+		)`, userID, organizationID, projectName, roleRank(required)).Scan(&allowed)
+	if err != nil {
+		return fmt.Errorf("authorize project: %w", err)
+	}
+	if !allowed {
+		return ErrForbidden
+	}
+	return nil
+}
+
+func (r *Repository) GrantProjectMembership(ctx context.Context, userID, organizationID, projectName string, role auth.Role) error {
+	if _, err := auth.ParseRole(string(role)); err != nil {
+		return err
+	}
+	result, err := r.db.ExecContext(ctx, `
+		INSERT INTO project_memberships (project_id, user_id, role)
+		SELECT p.id, $1::uuid, $4
+		FROM projects p
+		JOIN organization_memberships om ON om.organization_id = p.organization_id AND om.user_id = $1::uuid
+		WHERE p.organization_id = $2::uuid AND p.name = $3 AND p.deleted_at IS NULL
+		ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role, updated_at = now()`, userID, organizationID, projectName, role)
+	if err != nil {
+		return fmt.Errorf("grant project membership: %w", err)
+	}
+	if count, _ := result.RowsAffected(); count == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func roleRank(role auth.Role) int {
+	switch role {
+	case auth.RoleViewer:
+		return 1
+	case auth.RoleDeveloper:
+		return 2
+	case auth.RoleOperator:
+		return 3
+	case auth.RoleAdmin:
+		return 4
+	case auth.RoleOwner:
+		return 5
+	default:
+		return 0
+	}
 }
 
 func (r *Repository) UpdateProject(ctx context.Context, name string, project *api.Project) error {

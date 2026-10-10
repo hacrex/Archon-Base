@@ -15,7 +15,7 @@
 - [x] Project and DatabaseInstance CRUD API handlers.
 - [x] Student K3s installation script.
 - [x] Local resource monitoring daemon.
-- [x] Authentication foundation and organization membership lookup; complete project authorization remains.
+- [x] Authentication foundation, organization membership lookup, and project-scoped authorization foundation.
 - [ ] Persistent web console; the current modular console remains a local preview.
 - [ ] Production-ready controllers and reconciliation.
 - [ ] Agent, model, storage, tool, knowledge, and governance backend services.

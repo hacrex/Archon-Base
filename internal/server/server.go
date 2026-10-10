@@ -85,7 +85,7 @@ func NewWithProvisioner(repository ResourceStore, qdrant *provision.Qdrant) *Ser
 
 // Handler returns the server with request ID and structured access-log middleware.
 func (s *Server) Handler() http.Handler {
-	return requestLogging(withRequestID(cors(s.authenticate(s.mux))))
+	return requestLogging(withRequestID(cors(s.authenticate(s.authorize(s.mux)))))
 }
 
 func cors(next http.Handler) http.Handler {
@@ -227,6 +227,71 @@ func (s *Server) authenticate(next http.Handler) http.Handler {
 	})
 }
 
+func (s *Server) authorize(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		principal, ok := principalFromContext(r.Context())
+		if !ok {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if r.URL.Path == "/v1/projects" {
+			if r.Method == http.MethodPost && auth.Authorize(principal.Role, auth.RoleDeveloper) != nil {
+				writeForbidden(w, "creating projects requires developer access or higher")
+				return
+			}
+			next.ServeHTTP(w, r)
+			return
+		}
+		parts := routeParts(r.URL.Path)
+		if len(parts) < 3 || parts[0] != "v1" || parts[1] != "projects" || parts[2] == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		required, ok := requiredProjectRole(r.Method, len(parts) > 3)
+		if !ok {
+			next.ServeHTTP(w, r)
+			return
+		}
+		authorizer, configured := s.store.(store.ProjectAuthorizer)
+		if !configured {
+			writeError(w, http.StatusServiceUnavailable, "authorization_unavailable", "project authorization is not configured")
+			return
+		}
+		if err := authorizer.AuthorizeProject(r.Context(), principal.UserID, principal.Organization, parts[2], required); err != nil {
+			if errors.Is(err, store.ErrForbidden) {
+				writeForbidden(w, "you do not have the required project access")
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "internal_error", "project authorization failed")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func requiredProjectRole(method string, nested bool) (auth.Role, bool) {
+	switch method {
+	case http.MethodGet:
+		return auth.RoleViewer, true
+	case http.MethodPost:
+		if nested {
+			return auth.RoleDeveloper, true
+		}
+	case http.MethodPatch:
+		return auth.RoleDeveloper, true
+	case http.MethodDelete:
+		if nested {
+			return auth.RoleOperator, true
+		}
+		return auth.RoleAdmin, true
+	}
+	return "", false
+}
+
+func writeForbidden(w http.ResponseWriter, message string) {
+	writeError(w, http.StatusForbidden, "forbidden", message)
+}
+
 func (s *Server) livez(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
@@ -259,7 +324,18 @@ func (s *Server) projects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == http.MethodGet {
-		projects, err := s.store.ListProjects(r.Context())
+		var projects []api.Project
+		var err error
+		if principal, ok := principalFromContext(r.Context()); ok {
+			if scoped, configured := s.store.(store.ProjectAuthorizer); configured {
+				projects, err = scoped.ListProjectsForPrincipal(r.Context(), principal.UserID, principal.Organization)
+			} else {
+				writeError(w, http.StatusServiceUnavailable, "authorization_unavailable", "project authorization is not configured")
+				return
+			}
+		} else {
+			projects, err = s.store.ListProjects(r.Context())
+		}
 		if err != nil {
 			s.writeStoreError(w, err)
 			return
@@ -284,6 +360,14 @@ func (s *Server) projects(w http.ResponseWriter, r *http.Request) {
 	if err := s.store.CreateProject(r.Context(), &project); err != nil {
 		s.writeStoreError(w, err)
 		return
+	}
+	if principal, ok := principalFromContext(r.Context()); ok {
+		if memberships, configured := s.store.(store.ProjectMembershipStore); configured {
+			if err := memberships.GrantProjectMembership(r.Context(), principal.UserID, principal.Organization, project.Metadata.Name, principal.Role); err != nil {
+				writeError(w, http.StatusInternalServerError, "membership_grant_failed", "project was created but creator access could not be granted")
+				return
+			}
+		}
 	}
 	w.Header().Set("Location", "/v1/projects/"+project.Metadata.Name)
 	writeJSON(w, http.StatusCreated, project)

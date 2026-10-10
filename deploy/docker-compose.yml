@@ -6,20 +6,29 @@ services:
       dockerfile: deploy/Dockerfile
     environment:
       ARCHON_API_ADDR: ":8080"
-      ARCHON_DB_URL: postgres://archon:archon@postgres:5432/archon?sslmode=disable
+      ARCHON_DB_URL: postgres://${POSTGRES_USER:-archon}:${POSTGRES_PASSWORD:-archon}@postgres:5432/${POSTGRES_DB:-archon}?sslmode=disable
       ARCHON_MIGRATIONS_DIR: /migrations
       ARCHON_ORGANIZATION_ID: 00000000-0000-0000-0000-000000000001
       ARCHON_QDRANT_URL: http://qdrant:6333
       ARCHON_NATS_URL: nats://nats:4222
     ports: ["8080:8080"]
-    depends_on: [postgres, nats]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
 
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: archon
-      POSTGRES_PASSWORD: archon
-      POSTGRES_DB: archon
+      POSTGRES_USER: ${POSTGRES_USER:-archon}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-archon}
+      POSTGRES_DB: ${POSTGRES_DB:-archon}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     volumes: [pgdata:/var/lib/postgresql/data]
 
   nats:
