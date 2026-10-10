@@ -45,14 +45,20 @@ archon-base/
 Requirements: Go 1.22 or newer, Docker with Compose.
 
 ```bash
-# run the API locally (set ARCHON_DB_URL to enable resource persistence)
+# install the product database and first owner admin
+printf '%s\n' 'replace-with-a-strong-local-password' | \
+  go run ./cmd/archon install \
+    --database-url 'postgres://archon:archon@127.0.0.1:5432/archon?sslmode=disable' \
+    --admin-email admin@example.com --password-stdin
+
+# run the API locally
 make run
 curl localhost:8080/healthz
 curl localhost:8080/livez
 curl localhost:8080/readyz
 curl localhost:8080/v1/auth/me -H 'Authorization: Bearer <token>'
 
-# or run the dev stack (API, Postgres, NATS, Qdrant)
+# or run the dev stack (API, Postgres, NATS, Qdrant), then run `archon install`
 make up
 ```
 

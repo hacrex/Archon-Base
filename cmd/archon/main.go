@@ -25,8 +25,9 @@ const usage = `archon: CLI for Archon Base
 Usage:
   archon <command> [args]
 
-Commands:
-  version         print CLI version
+	Commands:
+	  install         create the product database and first administrator
+	  version         print CLI version
   bootstrap-user  create the first active user and organization owner
   init            scaffold a new project        (planned)
   dev             run the local emulator        (planned)
@@ -52,6 +53,11 @@ func main() {
 	switch os.Args[1] {
 	case "version":
 		fmt.Println("archon 0.0.1-dev")
+	case "install":
+		if err := install(os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "archon install: %v\n", err)
+			os.Exit(1)
+		}
 	case "bootstrap-user":
 		if err := bootstrapUser(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "archon bootstrap-user: %v\n", err)

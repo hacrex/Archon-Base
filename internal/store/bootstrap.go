@@ -33,6 +33,12 @@ func (r *Repository) BootstrapUser(ctx context.Context, email, displayName, pass
 		return api.User{}, api.Membership{}, fmt.Errorf("begin bootstrap user: %w", err)
 	}
 	defer tx.Rollback()
+	if _, err := tx.ExecContext(ctx, `
+		INSERT INTO organizations (id, slug, name)
+		VALUES ($1::uuid, 'local', 'Archon Base Organization')
+		ON CONFLICT (id) DO NOTHING`, r.organizationID); err != nil {
+		return api.User{}, api.Membership{}, fmt.Errorf("create product organization: %w", err)
+	}
 	if err := tx.QueryRowContext(ctx, `
 		INSERT INTO users (email, display_name, status)
 		VALUES ($1, $2, 'active')

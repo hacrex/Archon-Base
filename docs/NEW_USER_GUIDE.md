@@ -23,14 +23,14 @@ The repository is currently a **foundation and preview**, not a finished Supabas
 | Migration runner | Implemented with `schema_migrations` version tracking |
 | HTTP CRUD handlers | Implemented for Projects and DatabaseInstances |
 | Qdrant provisioning | Implemented when `ARCHON_QDRANT_URL` is configured; creates one deterministic collection per DatabaseInstance |
-| User/membership foundation | PostgreSQL schema and validation foundation implemented; authentication is still required before member mutations |
+| User/membership foundation | PostgreSQL schema, authentication, project-scoped authorization, and project member API implemented |
 | Migration SQL | Initial tables exist |
 | K3s student installer | Implemented with prerequisite checks and dry run |
 | Local resource monitor | Implemented with JSON, health, and Prometheus endpoints |
 | Web control-plane shell | Implemented as a local preview |
 | Authentication | Login/logout repository and bearer middleware implemented |
-| Authorization/RBAC | Role hierarchy and organization membership lookup implemented; project policy checks remain |
-| First-user bootstrap | Implemented through `archon bootstrap-user`; duplicate emails are refused |
+| Authorization/RBAC | Organization and project-scoped role checks implemented |
+| First-user bootstrap | CapRover-style `archon install` creates the product database, applies migrations, and creates the first owner admin |
 | Persistent web console | Not implemented; current UI uses local preview data |
 | CLI workflows | Not implemented; most commands are stubs |
 | Kubernetes reconciliation | Not implemented |
@@ -68,13 +68,43 @@ go vet ./...
 go build ./...
 ```
 
+### Install Archon Base and create the first admin
+
+The installer creates the **Archon Base product database**. This is the control-plane metadata database for organizations, users, projects, memberships, resource state, and outbox events. Vector databases and other AI resources are created later inside projects; they are not mixed with the product metadata tables.
+
+If PostgreSQL is already running and the `archon` database already exists:
+
+```bash
+export ARCHON_DB_URL='postgres://archon:archon@127.0.0.1:5432/archon?sslmode=disable'
+printf '%s\n' 'replace-with-a-strong-local-password' | \
+  go run ./cmd/archon install \
+    --database-url "$ARCHON_DB_URL" \
+    --admin-email admin@example.com \
+    --admin-name 'Archon Administrator' \
+    --password-stdin
+```
+
+To let Archon create the PostgreSQL database first, provide an administrative PostgreSQL URL:
+
+```bash
+printf '%s\n' 'replace-with-a-strong-local-password' | \
+  go run ./cmd/archon install \
+    --admin-db-url 'postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable' \
+    --database-name archon \
+    --admin-email admin@example.com \
+    --admin-name 'Archon Administrator' \
+    --password-stdin
+```
+
+The install command is safe to rerun for migrations, but it refuses to overwrite an existing admin email or password. Passwords are accepted through stdin or a flag, hashed with bcrypt, and never stored in plaintext. The first account receives the organization `owner` role.
+
 ### Start the API preview
 
 ```bash
 make run
 ```
 
-Before logging in for the first time, create the local owner account from a shell with access to PostgreSQL:
+For compatibility, the lower-level bootstrap command remains available when the product database already exists:
 
 ```bash
 export ARCHON_DB_URL='postgres://archon:archon@127.0.0.1:5432/archon?sslmode=disable'
