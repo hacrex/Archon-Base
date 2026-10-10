@@ -30,6 +30,9 @@ type ProjectAuthorizer interface {
 // after a project is created. The operation is idempotent.
 type ProjectMembershipStore interface {
 	GrantProjectMembership(context.Context, string, string, string, auth.Role) error
+	ListProjectMemberships(context.Context, string, string) ([]api.ProjectMembership, error)
+	UpsertProjectMembership(context.Context, string, string, string, string, auth.Role) error
+	RevokeProjectMembership(context.Context, string, string, string, string) error
 }
 
 type Repository struct {
@@ -197,6 +200,72 @@ func (r *Repository) GrantProjectMembership(ctx context.Context, userID, organiz
 		ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role, updated_at = now()`, userID, organizationID, projectName, role)
 	if err != nil {
 		return fmt.Errorf("grant project membership: %w", err)
+	}
+	if count, _ := result.RowsAffected(); count == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (r *Repository) ListProjectMemberships(ctx context.Context, organizationID, projectName string) ([]api.ProjectMembership, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT p.name, pm.user_id::text, u.email, u.display_name, pm.role, pm.created_at, pm.updated_at
+		FROM project_memberships pm
+		JOIN projects p ON p.id = pm.project_id
+		JOIN users u ON u.id = pm.user_id
+		WHERE p.organization_id = $1::uuid AND p.name = $2 AND p.deleted_at IS NULL
+		ORDER BY u.email`, organizationID, projectName)
+	if err != nil {
+		return nil, fmt.Errorf("list project memberships: %w", err)
+	}
+	defer rows.Close()
+	members := []api.ProjectMembership{}
+	for rows.Next() {
+		var member api.ProjectMembership
+		if err := rows.Scan(&member.Project, &member.UserID, &member.Email, &member.DisplayName, &member.Role, &member.CreatedAt, &member.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan project membership: %w", err)
+		}
+		members = append(members, member)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate project memberships: %w", err)
+	}
+	return members, nil
+}
+
+func (r *Repository) UpsertProjectMembership(ctx context.Context, organizationID, projectName, actorID, userID string, role auth.Role) error {
+	if _, err := auth.ParseRole(string(role)); err != nil {
+		return err
+	}
+	result, err := r.db.ExecContext(ctx, `
+		INSERT INTO project_memberships (project_id, user_id, role)
+		SELECT p.id, target.id, $5
+		FROM projects p
+		JOIN organization_memberships actor ON actor.organization_id = p.organization_id AND actor.user_id = $3::uuid
+		JOIN organization_memberships target_membership ON target_membership.organization_id = p.organization_id AND target_membership.user_id = $4::uuid
+		JOIN users target ON target.id = target_membership.user_id AND target.status = 'active'
+		WHERE p.organization_id = $1::uuid AND p.name = $2 AND p.deleted_at IS NULL
+		  AND ($5 <> 'owner' OR actor.role = 'owner')
+		ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role, updated_at = now()`, organizationID, projectName, actorID, userID, role)
+	if err != nil {
+		return fmt.Errorf("upsert project membership: %w", err)
+	}
+	if count, _ := result.RowsAffected(); count == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (r *Repository) RevokeProjectMembership(ctx context.Context, organizationID, projectName, actorID, userID string) error {
+	result, err := r.db.ExecContext(ctx, `
+		DELETE FROM project_memberships pm
+		USING projects p, organization_memberships actor
+		WHERE pm.project_id = p.id AND p.organization_id = $1::uuid AND p.name = $2 AND p.deleted_at IS NULL
+		  AND actor.organization_id = p.organization_id AND actor.user_id = $3::uuid
+		  AND pm.user_id = $4::uuid
+		  AND (pm.role <> 'owner' OR actor.role = 'owner')`, organizationID, projectName, actorID, userID)
+	if err != nil {
+		return fmt.Errorf("revoke project membership: %w", err)
 	}
 	if count, _ := result.RowsAffected(); count == 0 {
 		return ErrNotFound

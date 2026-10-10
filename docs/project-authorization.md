@@ -61,6 +61,19 @@ Authorization failures return the stable `forbidden` error code. If project auth
 
 Project collection `GET /v1/projects` uses a principal-scoped query and never returns projects outside the caller's organization or explicit project grants. `POST /v1/projects` is organization-scoped and requires developer access before the project is created.
 
+## Member API
+
+The project membership surface is available at `/v1/projects/{project}/members`:
+
+| Method | Purpose | Minimum role |
+|---|---|---:|
+| `GET` | List explicit project memberships with user email and display name | viewer |
+| `PUT` | Create or replace `{ "userId": "…", "role": "developer" }` | admin |
+| `POST` | Alias for `PUT` for CLI-friendly clients | admin |
+| `DELETE /{userId}` | Revoke an explicit project membership | admin |
+
+Membership targets must be active users in the same organization. Only an organization owner can grant the `owner` project role. All membership mutations are scoped by the organization ID carried by the authenticated principal, so a caller cannot assign a user from another organization.
+
 ## PostgreSQL configuration
 
 For local development:

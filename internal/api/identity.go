@@ -23,6 +23,16 @@ type Membership struct {
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
+type ProjectMembership struct {
+	Project     string    `json:"project"`
+	UserID      string    `json:"userId"`
+	Email       string    `json:"email"`
+	DisplayName string    `json:"displayName"`
+	Role        string    `json:"role"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
 func (u User) Validate() error {
 	var errs ValidationErrors
 	if !emailPattern.MatchString(strings.ToLower(strings.TrimSpace(u.Email))) {
@@ -47,6 +57,22 @@ func (m Membership) Validate() error {
 	}
 	if strings.TrimSpace(m.Organization) == "" {
 		errs = errs.Add("organizationId", "is required")
+	}
+	switch m.Role {
+	case "owner", "admin", "operator", "developer", "viewer":
+	default:
+		errs = errs.Add("role", "must be owner, admin, operator, developer, or viewer")
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func (m ProjectMembership) Validate() error {
+	var errs ValidationErrors
+	if strings.TrimSpace(m.UserID) == "" {
+		errs = errs.Add("userId", "is required")
 	}
 	switch m.Role {
 	case "owner", "admin", "operator", "developer", "viewer":

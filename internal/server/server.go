@@ -247,7 +247,7 @@ func (s *Server) authorize(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		required, ok := requiredProjectRole(r.Method, len(parts) > 3)
+		required, ok := requiredProjectRole(r.Method, parts)
 		if !ok {
 			next.ServeHTTP(w, r)
 			return
@@ -269,7 +269,17 @@ func (s *Server) authorize(next http.Handler) http.Handler {
 	})
 }
 
-func requiredProjectRole(method string, nested bool) (auth.Role, bool) {
+func requiredProjectRole(method string, parts []string) (auth.Role, bool) {
+	if len(parts) >= 4 && parts[3] == "members" {
+		if method == http.MethodGet {
+			return auth.RoleViewer, true
+		}
+		if method == http.MethodPost || method == http.MethodPut || method == http.MethodDelete {
+			return auth.RoleAdmin, true
+		}
+		return "", false
+	}
+	nested := len(parts) > 3
 	switch method {
 	case http.MethodGet:
 		return auth.RoleViewer, true
@@ -388,6 +398,14 @@ func (s *Server) projectRoutes(w http.ResponseWriter, r *http.Request) {
 		s.projectResource(w, r, projectName)
 		return
 	}
+	if len(parts) == 4 && parts[3] == "members" {
+		s.projectMembers(w, r, projectName, "")
+		return
+	}
+	if len(parts) == 5 && parts[3] == "members" && parts[4] != "" {
+		s.projectMembers(w, r, projectName, parts[4])
+		return
+	}
 	if len(parts) == 4 && parts[3] == "databases" {
 		s.databaseCollection(w, r, projectName)
 		return
@@ -437,6 +455,73 @@ func (s *Server) projectResource(w http.ResponseWriter, r *http.Request, name st
 		w.WriteHeader(http.StatusAccepted)
 	default:
 		methodNotAllowed(w, http.MethodGet, http.MethodPatch, http.MethodDelete)
+	}
+}
+
+func (s *Server) projectMembers(w http.ResponseWriter, r *http.Request, projectName, userID string) {
+	memberships, configured := s.store.(store.ProjectMembershipStore)
+	if !configured {
+		writeError(w, http.StatusServiceUnavailable, "authorization_unavailable", "project membership management is not configured")
+		return
+	}
+	principal, ok := principalFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "a valid bearer token is required")
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		if userID != "" {
+			methodNotAllowed(w, http.MethodDelete)
+			return
+		}
+		members, err := memberships.ListProjectMemberships(r.Context(), principal.Organization, projectName)
+		if err != nil {
+			s.writeStoreError(w, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"items": members})
+	case http.MethodPost, http.MethodPut:
+		if userID != "" {
+			methodNotAllowed(w, http.MethodDelete)
+			return
+		}
+		var member api.ProjectMembership
+		if err := decodeJSON(r, &member); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid_request", err.Error())
+			return
+		}
+		if err := member.Validate(); err != nil {
+			writeValidationError(w, err)
+			return
+		}
+		role, err := auth.ParseRole(member.Role)
+		if err != nil {
+			writeValidationError(w, err)
+			return
+		}
+		if role == auth.RoleOwner && principal.Role != auth.RoleOwner {
+			writeForbidden(w, "only an organization owner can grant project ownership")
+			return
+		}
+		if err := memberships.UpsertProjectMembership(r.Context(), principal.Organization, projectName, principal.UserID, member.UserID, role); err != nil {
+			s.writeStoreError(w, err)
+			return
+		}
+		member.Project, member.Role = projectName, string(role)
+		writeJSON(w, http.StatusOK, member)
+	case http.MethodDelete:
+		if userID == "" {
+			methodNotAllowed(w, http.MethodDelete)
+			return
+		}
+		if err := memberships.RevokeProjectMembership(r.Context(), principal.Organization, projectName, principal.UserID, userID); err != nil {
+			s.writeStoreError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		methodNotAllowed(w, http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete)
 	}
 }
 
@@ -532,6 +617,8 @@ func (s *Server) writeStoreError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusNotFound, "not_found", err.Error())
+	case errors.Is(err, store.ErrForbidden):
+		writeForbidden(w, err.Error())
 	case errors.Is(err, store.ErrProjectNotEmpty):
 		writeError(w, http.StatusConflict, "project_not_empty", err.Error())
 	default:

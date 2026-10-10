@@ -194,7 +194,7 @@ A user can create an account or sign in, create an organization and project, cre
 
 - [ ] Manage organization profile and defaults.
 - [ ] Invite, suspend, remove, and restore members.
-- [x] Assign organization roles and resolve the authenticated organization membership; project-level permissions remain.
+- [x] Assign organization roles and resolve the authenticated organization membership; project-scoped authorization and member API are implemented, with dashboard management UI remaining.
 - [ ] View pending invitations and expiration.
 - [ ] Configure allowed identity providers.
 - [ ] Configure organization API keys and service accounts.
