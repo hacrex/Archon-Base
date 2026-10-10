@@ -23,6 +23,12 @@ func (f *fakeStore) CreateProject(_ context.Context, p *api.Project) error {
 	p.Metadata.UID = "project-1"
 	return nil
 }
+func (f *fakeStore) ListProjects(_ context.Context) ([]api.Project, error) {
+	if f.project == nil {
+		return []api.Project{}, nil
+	}
+	return []api.Project{*f.project}, nil
+}
 func (f *fakeStore) GetProject(_ context.Context, name string) (*api.Project, error) {
 	if f.project == nil || f.project.Metadata.Name != name {
 		return nil, errors.New("not found")
@@ -74,6 +80,13 @@ func TestProjectCRUDRoutes(t *testing.T) {
 	}
 	if store.project.Metadata.UID != "project-1" {
 		t.Fatalf("project was not persisted: %#v", store.project)
+	}
+
+	request = httptest.NewRequest(http.MethodGet, "/v1/projects", nil)
+	response = httptest.NewRecorder()
+	srv.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), "support-bot") {
+		t.Fatalf("list status = %d, body = %s", response.Code, response.Body.String())
 	}
 
 	request = httptest.NewRequest(http.MethodGet, "/v1/projects/support-bot", nil)

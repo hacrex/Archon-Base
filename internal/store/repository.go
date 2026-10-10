@@ -90,6 +90,31 @@ func (r *Repository) GetProject(ctx context.Context, name string) (*api.Project,
 	return scanProject(row)
 }
 
+func (r *Repository) ListProjects(ctx context.Context) ([]api.Project, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id::text, name, display_name, description, environment, region, spec, labels, annotations,
+		       phase, message, generation, observed_generation, created_at, updated_at
+		FROM projects
+		WHERE organization_id = $1 AND deleted_at IS NULL
+		ORDER BY name`, r.organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("list projects: %w", err)
+	}
+	defer rows.Close()
+	projects := []api.Project{}
+	for rows.Next() {
+		project, err := scanProject(rows)
+		if err != nil {
+			return nil, err
+		}
+		projects = append(projects, *project)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate projects: %w", err)
+	}
+	return projects, nil
+}
+
 func (r *Repository) UpdateProject(ctx context.Context, name string, project *api.Project) error {
 	if project == nil {
 		return errors.New("project is required")

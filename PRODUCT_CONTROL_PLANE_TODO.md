@@ -78,7 +78,7 @@ A user can create an account or sign in, create an organization and project, cre
 - [x] Add notification center entry point for asynchronous operation results and system warnings.
 - [x] Add global status banner for degraded dependencies and maintenance windows.
 - [x] Add route-level fallback rendering and recoverable planned-feature states.
-- [ ] Add session-expiry handling with safe reauthentication.
+- [x] Add session-expiry handling with safe reauthentication.
 - [x] Add keyboard focus, semantic headings, responsive layout, and reduced-motion behavior.
 
 ### 1.2 Shared UI components
@@ -166,7 +166,7 @@ A user can create an account or sign in, create an organization and project, cre
 
 ### 3.3 Resource experience
 
-- [ ] Create Project form with schema validation and defaults.
+- [x] Create Project form with schema validation and defaults.
 - [ ] Project detail page with spec, status, conditions, events, and metadata.
 - [ ] Project edit flow with generation/concurrency handling.
 - [ ] DatabaseInstance create form with engine, version, plan, storage, backup, and network settings.

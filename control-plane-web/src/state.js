@@ -1,4 +1,11 @@
 export const state = {
+  token: sessionStorage.getItem('archon_token') || '',
+  user: null,
+  authLoading: false,
+  authError: '',
+  projects: [],
+  projectsLoading: false,
+  projectsError: '',
   route: 'overview',
   subroute: '',
   resources: [

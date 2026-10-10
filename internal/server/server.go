@@ -28,6 +28,7 @@ const requestIDHeader = "X-Request-ID"
 
 type ResourceStore interface {
 	CreateProject(context.Context, *api.Project) error
+	ListProjects(context.Context) ([]api.Project, error)
 	GetProject(context.Context, string) (*api.Project, error)
 	UpdateProject(context.Context, string, *api.Project) error
 	DeleteProject(context.Context, string) error
@@ -84,7 +85,24 @@ func NewWithProvisioner(repository ResourceStore, qdrant *provision.Qdrant) *Ser
 
 // Handler returns the server with request ID and structured access-log middleware.
 func (s *Server) Handler() http.Handler {
-	return requestLogging(withRequestID(s.authenticate(s.mux)))
+	return requestLogging(withRequestID(cors(s.authenticate(s.mux))))
+}
+
+func cors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "http://127.0.0.1:4174" || origin == "http://localhost:4174" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+		}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) routes() {
@@ -236,12 +254,21 @@ func (s *Server) projects(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if r.Method != http.MethodPost {
-		methodNotAllowed(w, http.MethodPost)
-		return
-	}
 	if s.store == nil {
 		serviceUnavailable(w)
+		return
+	}
+	if r.Method == http.MethodGet {
+		projects, err := s.store.ListProjects(r.Context())
+		if err != nil {
+			s.writeStoreError(w, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"items": projects})
+		return
+	}
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w, http.MethodGet, http.MethodPost)
 		return
 	}
 	var project api.Project

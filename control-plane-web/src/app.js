@@ -1,13 +1,20 @@
 import { state } from './state.js';
+import { login, me, logout, listProjects, createProject } from './api.js';
 import { modal } from './components.js';
 import { overview, projects, resources, operations, admin, audit, settings } from './routes.js';
+import { loginScreen, liveProjects } from './live-routes.js';
 
 export function boot() {
   const app = document.querySelector('#app');
   const crumb = document.querySelector('#page-crumb');
-  const pages = { overview: () => overview(state), projects, resources, operations, admin, audit, settings };
+  const pages = { overview: () => overview(state), projects: () => liveProjects(state), resources, operations, admin, audit, settings };
 
   function render() {
+    document.body.classList.toggle('auth-mode', !state.token);
+    if (!state.token) {
+      app.innerHTML = loginScreen(state);
+      return;
+    }
     const raw = location.hash.replace(/^#\/?/, '') || 'overview';
     const parts = raw.split('/');
     state.route = parts[0];
@@ -18,20 +25,100 @@ export function boot() {
     app.focus();
   }
 
-  document.addEventListener('click', (event) => {
+  async function loadProjects() {
+    state.projectsLoading = true;
+    render();
+    try {
+      state.projects = (await listProjects(state.token)).items || [];
+      state.projectsError = '';
+    } catch (error) {
+      if (error.status === 401) {
+        state.token = '';
+        sessionStorage.removeItem('archon_token');
+      }
+      state.projectsError = error.message;
+    } finally {
+      state.projectsLoading = false;
+    }
+  }
+
+  async function loadSession() {
+    if (!state.token) return render();
+    try {
+      state.user = await me(state.token);
+      await loadProjects();
+    } catch (error) {
+      state.token = '';
+      sessionStorage.removeItem('archon_token');
+      state.authError = error.status === 401 ? 'Your session expired. Please sign in again.' : error.message;
+    }
+    render();
+  }
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest('[data-form]');
+    if (!form) return;
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(form));
+    if (form.dataset.form === 'login') {
+      state.authLoading = true;
+      state.authError = '';
+      render();
+      try {
+        const result = await login(values.email, values.password);
+        state.token = result.token;
+        sessionStorage.setItem('archon_token', result.token);
+        state.authLoading = false;
+        await loadSession();
+      } catch (error) {
+        state.authLoading = false;
+        state.authError = error.status === 401 ? 'Email or password is incorrect.' : error.message;
+        render();
+      }
+    }
+    if (form.dataset.form === 'project') {
+      const submit = form.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      try {
+        await createProject(state.token, values);
+        document.querySelector('#modal-root').innerHTML = '';
+        location.hash = '#/projects';
+        await loadProjects();
+      } catch (error) {
+        const message = form.querySelector('.form-error');
+        message.hidden = false;
+        message.textContent = error.message;
+        submit.disabled = false;
+      }
+    }
+  });
+
+  document.addEventListener('click', async (event) => {
     const target = event.target.closest('[data-action]');
     if (!target) return;
     const action = target.dataset.action;
     if (action === 'dismiss-notice') document.querySelector('.notice-bar')?.remove();
     if (action === 'menu') document.querySelector('.sidebar').classList.toggle('open');
-    if (action === 'context' || action === 'user') modal('Context switcher', 'The local preview currently has one organization and one development project. Organization membership and multi-project switching arrive with authentication.');
-    if (action === 'search' || action === 'notifications') modal(action === 'search' ? 'Global search' : 'Notifications', action === 'search' ? 'Search will span projects, resources, deployments, logs, and documentation once the API index is connected.' : 'No new notifications. Operation events will appear here when the event stream is connected.');
-    if (action === 'planned') modal('Planned capability', 'This control-plane surface is visible to make the product boundary clear. The backend contract and authorization flow are not implemented yet.');
-    if (action === 'new-project' || action === 'new-resource') modal(action === 'new-project' ? 'Create project' : 'Create resource', 'Creation forms will be backed by the v1 API in the next slice. This preview does not submit changes.', '<button class="button" data-action="close-modal">Cancel</button><button class="button primary" data-action="planned">View status</button>');
-    if (action === 'allocation-policy') modal('Allocation policy', 'Requests reserve capacity on the selected data plane. Limits cap runtime usage. Validation will be performed by the resource API when connected.');
-    if (action === 'edit-allocation') { const item = state.allocations[Number(target.dataset.index || 0)]; modal('Edit allocation', `<div class="allocation-form"><label>CPU request<input value="${item.requested.cpu}" disabled></label><label>CPU limit<input value="${item.limit.cpu}" disabled></label><label>Memory request<input value="${item.requested.memory}" disabled></label><label>Memory limit<input value="${item.limit.memory}" disabled></label><label>GPU request<input value="${item.requested.gpu}" disabled></label></div><p class="form-note">The editor is staged for the resource API. Values are read-only in this preview.</p>`, '<button class="button primary" data-action="close-modal">Close</button>'); }
+    if (action === 'user') {
+      modal('Account', `<p>${state.user?.Email || 'Signed-in user'}</p><p class="form-note">Organization: ${state.user?.Organization || 'local'}</p>`, '<button class="button" data-action="close-modal">Cancel</button><button class="button primary" data-action="logout">Sign out</button>');
+    }
+    if (action === 'context') modal('AI Backend context', 'Organization and project switching will use authenticated membership and project APIs in the next slice.');
+    if (action === 'search' || action === 'notifications') modal(action === 'search' ? 'Global search' : 'Notifications', action === 'search' ? 'Search will span projects, resources, deployments, logs, and documentation once the API index is connected.' : 'No new notifications.');
+    if (action === 'new-project') {
+      modal('Create AI Backend project', `<form data-form="project" class="auth-form"><label>Project name<input name="name" required pattern="[a-z][a-z0-9-]{1,62}" placeholder="support-bot"></label><label>Display name<input name="displayName" required placeholder="Support Bot"></label><label>Environment<select name="environment"><option>development</option><option>staging</option><option>production</option></select></label><label>Region<input name="region" value="local"></label><div class="form-error" hidden></div><button class="button primary" type="submit">Create project</button></form>`);
+    }
+    if (action === 'logout') {
+      try { await logout(state.token); } catch (_) { /* clear local state even if API is unavailable */ }
+      state.token = '';
+      state.user = null;
+      sessionStorage.removeItem('archon_token');
+      document.querySelector('#modal-root').innerHTML = '';
+      render();
+    }
+    if (action === 'planned') modal('Planned capability', 'This AI Backend surface is visible to make the product boundary clear.');
+    if (action === 'allocation-policy' || action === 'edit-allocation') modal('Preview capability', 'Allocation management will be connected to the resource API after project authorization is complete.');
     if (action === 'close-modal') document.querySelector('#modal-root').innerHTML = '';
   });
   window.addEventListener('hashchange', render);
-  render();
+  loadSession();
 }
